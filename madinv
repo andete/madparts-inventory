@@ -8,10 +8,26 @@ import sys
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
+class PartTree(QtGui.QTreeView):
+
+  def __init__(self):
+    super(PartTree, self).__init__()
+    self.model = QtGui.QStandardItemModel()
+    self.setModel(self.model)
+
 class Left(QtGui.QWidget):
 
   def __init__(self):
     super(Left, self).__init__()
+    vbox = QtGui.QVBoxLayout(self)
+    hbox = QtGui.QHBoxLayout()
+    hbox.addWidget(QtGui.QLabel("Filter:"))
+    self.filter_le = QtGui.QLineEdit()
+    hbox.addWidget(self.filter_le)
+    vbox.addLayout(hbox)
+    self.part_tree = PartTree()
+    vbox.addWidget(self.part_tree)
+    self.setLayout(vbox)
 
 class Right(QtGui.QWidget):
 
@@ -33,9 +49,12 @@ class MainWin(QtGui.QMainWindow):
     self.add_action(helpMenu, '&About', self.about)
 
     splitter = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
-    splitter.addWidget(Left())
-    splitter.addWidget(Right())
+    self.left = Left()
+    splitter.addWidget(self.left)
+    self.right = Right()
+    splitter.addWidget(self.right)
     self.setCentralWidget(splitter)
+    self.statusBar().showMessage("Ready.")
 
   def close(self):
     QtGui.qApp.quit()
@@ -65,8 +84,8 @@ class MainWin(QtGui.QMainWindow):
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")
   QtCore.QCoreApplication.setOrganizationDomain("madparts.org")
-  QtCore.QCoreApplication.setApplicationName("mpinv")
-  app = QtGui.QApplication(["mpinv"])
+  QtCore.QCoreApplication.setApplicationName("madinv")
+  app = QtGui.QApplication(["madinv"])
   widget = MainWin()
   widget.show()
   return app.exec_()
