@@ -8,6 +8,16 @@ import sys
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
+class Left(QtGui.QWidget):
+
+  def __init__(self):
+    super(Left, self).__init__()
+
+class Right(QtGui.QWidget):
+
+  def __init__(self):
+    super(Right, self).__init__()
+
 class MainWin(QtGui.QMainWindow):
 
   def __init__(self):
@@ -19,8 +29,24 @@ class MainWin(QtGui.QMainWindow):
     fileMenu = menuBar.addMenu('&File')
     self.add_action(fileMenu, '&Quit', self.close, 'Ctrl+Q')
 
+    helpMenu = menuBar.addMenu('&Help')
+    self.add_action(helpMenu, '&About', self.about)
+
+    splitter = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
+    splitter.addWidget(Left())
+    splitter.addWidget(Right())
+    self.setCentralWidget(splitter)
+
   def close(self):
     QtGui.qApp.quit()
+
+  def about(self):
+    a = """
+<p align="center"><b>madinv</b><br/>madparts inventory tool</p>
+<p align="center">(c) 2013 Joost Yervante Damad &lt;joost@damad.be&gt;</p>
+<p align="center"><a href="http://madparts.org">http://madparts.org</a></p>
+"""
+    QtGui.QMessageBox.about(self, "about madparts", a)
 
   def add_action(self, menu, text, slot, shortcut=None, checkable=False, checked=False):
     action = QtGui.QAction(text, self)
