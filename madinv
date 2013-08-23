@@ -8,12 +8,7 @@ import sys
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
-class PartTree(QtGui.QTreeView):
-
-  def __init__(self):
-    super(PartTree, self).__init__()
-    self.model = QtGui.QStandardItemModel()
-    self.setModel(self.model)
+from gui.parts import PartTree
 
 class Left(QtGui.QWidget):
 
