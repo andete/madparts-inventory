@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+#
+# (c) 2013 Joost Yervante Damad <joost@damad.be>
+# License: GPL
+
+import sys
+
+from PySide import QtGui, QtCore
+from PySide.QtCore import Qt
+
+class MainWin(QtGui.QMainWindow):
+
+  def __init__(self):
+    super(MainWin, self).__init__()
+
+    self.settings = QtCore.QSettings()
+
+    menuBar = self.menuBar()
+    fileMenu = menuBar.addMenu('&File')
+    self.add_action(fileMenu, '&Quit', self.close, 'Ctrl+Q')
+
+  def close(self):
+    QtGui.qApp.quit()
+
+  def add_action(self, menu, text, slot, shortcut=None, checkable=False, checked=False):
+    action = QtGui.QAction(text, self)
+    if checkable:
+      action.setCheckable(True)
+      if checked:
+        action.setChecked(True)
+    menu.addAction(action)
+    if slot == None:
+      action.setDisabled(True)
+    else:
+      action.triggered.connect(slot)
+    if shortcut != None: action.setShortcut(shortcut)
+    return action
+
+def gui_main():
+  QtCore.QCoreApplication.setOrganizationName("madparts")
+  QtCore.QCoreApplication.setOrganizationDomain("madparts.org")
+  QtCore.QCoreApplication.setApplicationName("mpinv")
+  app = QtGui.QApplication(["mpinv"])
+  widget = MainWin()
+  widget.show()
+  return app.exec_()
+
+if __name__ == '__main__':
+  sys.exit(gui_main())

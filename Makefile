@@ -1,0 +1,39 @@
+# set DATA_DIR for unit tests
+DATA_DIR := .
+export DATA_DIR
+
+all:
+	@./mpinv
+
+size:
+	@echo 'python:'
+	@wc -l `find . -name '*.py'`
+
+clean:
+	rm -rf build dist madparts.egg-info
+
+sdist:
+	python setup.py sdist
+
+testinstall:
+	rm -rf /tmp/bla
+	mkdir -p /tmp/bla
+	python setup.py install --root /tmp/bla/ --prefix /usr
+
+test:
+	@nosetests
+
+testone:
+	@nosetests -s test/madparts_test.py:test_kicad_old_export_polygon
+
+list:
+	@nosetests --collect-only -v
+
+coverage:
+	@nosetests --with-coverage \
+	--cover-package=coffee,export,gui,inter,syntax,util
+
+win32:
+	@python27 setup.py py2exe
+
+.PHONY: all clean size sdist test
