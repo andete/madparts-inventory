@@ -1,0 +1,9 @@
+*.pyc
+*.pyo
+*~
+build
+dist
+madparts.egg-info
+debian/*.debhelper
+debian/*.log
+debian/*.substvars
