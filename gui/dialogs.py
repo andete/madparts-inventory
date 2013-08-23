@@ -10,6 +10,8 @@ class PreferencesDialog(QtGui.QDialog):
 
   def __init__(self, parent, settings):
     super(PreferencesDialog, self).__init__(parent)
+    self.setWindowTitle('Preferences')
+    self.resize(640,160)
     vbox = QtGui.QVBoxLayout()
     form_layout = QtGui.QFormLayout()
     
@@ -20,6 +22,7 @@ class PreferencesDialog(QtGui.QDialog):
       hbox = QtGui.QHBoxLayout()
       widget = QtGui.QWidget()
       lib_button = QtGui.QPushButton("Browse")
+      lib_button.clicked.connect(self.browse)
       hbox.addWidget(lib_button)
       self.dir_widget = QtGui.QLineEdit(self.dir)
       self.dir_widget.setReadOnly(True)
@@ -45,3 +48,7 @@ class PreferencesDialog(QtGui.QDialog):
     self.settings.setValue("basedir", self.dir_widget.text())
     super(PreferencesDialog, self).accept()
 
+  def browse(self):
+    result = QtGui.QFileDialog.getExistingDirectory(self, "Select base directory")
+    if result == '': return
+    self.dir_widget.setText(result)
