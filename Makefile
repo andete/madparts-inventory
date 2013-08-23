@@ -3,7 +3,7 @@ DATA_DIR := .
 export DATA_DIR
 
 all:
-	@./mpinv
+	@./madinv
 
 size:
 	@echo 'python:'
