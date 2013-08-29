@@ -8,20 +8,22 @@ import sys
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
-from gui.parts import PartTree
-from gui.dialogs import PreferencesDialog
+from gui.parts import PartModel, PartTree
+from gui.dialogs import PreferencesDialog, AddCatDialog
+
+from data.data import Data
 
 class Left(QtGui.QWidget):
 
-  def __init__(self):
+  def __init__(self, part_model):
     super(Left, self).__init__()
     vbox = QtGui.QVBoxLayout(self)
     hbox = QtGui.QHBoxLayout()
-    hbox.addWidget(QtGui.QLabel("Filter:"))
-    self.filter_le = QtGui.QLineEdit()
-    hbox.addWidget(self.filter_le)
+    hbox.addWidget(QtGui.QLabel("Search:"))
+    self.search_le = QtGui.QLineEdit()
+    hbox.addWidget(self.search_le)
     vbox.addLayout(hbox)
-    self.part_tree = PartTree()
+    self.part_tree = PartTree(part_model)
     vbox.addWidget(self.part_tree)
     self.setLayout(vbox)
 
@@ -37,6 +39,9 @@ class MainWin(QtGui.QMainWindow):
 
     self.settings = QtCore.QSettings()
 
+    self.data = Data(self.settings)
+    self.part_model = PartModel(self.data)
+
     menuBar = self.menuBar()
     fileMenu = menuBar.addMenu('&File')
     self.add_action(fileMenu, '&Quit', self.close, 'Ctrl+Q')
@@ -44,15 +49,19 @@ class MainWin(QtGui.QMainWindow):
     editMenu = menuBar.addMenu('&Edit')
     self.add_action(editMenu, '&Preferences', self.preferences)
 
+    groupMenu = menuBar.addMenu('&Category')
+    self.add_action(groupMenu, '&Add', self.add_cat)
+
     helpMenu = menuBar.addMenu('&Help')
     self.add_action(helpMenu, '&About', self.about)
 
     splitter = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
-    self.left = Left()
+    self.left = Left(self.part_model)
     splitter.addWidget(self.left)
     self.right = Right()
     splitter.addWidget(self.right)
     self.setCentralWidget(splitter)
+
     self.statusBar().showMessage("Ready.")
 
   def close(self):
@@ -83,6 +92,11 @@ class MainWin(QtGui.QMainWindow):
       action.triggered.connect(slot)
     if shortcut != None: action.setShortcut(shortcut)
     return action
+
+  def add_cat(self):
+    dialog = AddCatDialog(self, self.data)
+    if dialog.exec_() == QtGui.QDialog.Accepted:
+      self.part_model.add(dialog.result)
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")

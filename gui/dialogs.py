@@ -6,6 +6,8 @@
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
+from data.data import default_basedir
+
 class PreferencesDialog(QtGui.QDialog):
 
   def __init__(self, parent, settings):
@@ -15,7 +17,7 @@ class PreferencesDialog(QtGui.QDialog):
     vbox = QtGui.QVBoxLayout()
     form_layout = QtGui.QFormLayout()
     
-    self.dir = settings.value("basedir", "example")
+    self.dir = settings.value("basedir", default_basedir)
     self.settings = settings
 
     def dir_select_widget():
@@ -52,3 +54,27 @@ class PreferencesDialog(QtGui.QDialog):
     result = QtGui.QFileDialog.getExistingDirectory(self, "Select base directory")
     if result == '': return
     self.dir_widget.setText(result)
+
+class AddCatDialog(QtGui.QDialog):
+
+  def __init__(self, parent, data):
+    super(AddCatDialog, self).__init__(parent)
+    self.data = data
+    self.setWindowTitle('Add Category')
+    self.resize(640,160)
+    vbox = QtGui.QVBoxLayout()
+    form_layout = QtGui.QFormLayout()
+    self.name_edit = QtGui.QLineEdit()
+    form_layout.addRow("Name: ", self.name_edit)
+    vbox.addLayout(form_layout)
+    buttons = QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel
+    button_box = QtGui.QDialogButtonBox(buttons, QtCore.Qt.Horizontal)
+    button_box.accepted.connect(self.accept)
+    button_box.rejected.connect(self.reject)
+    vbox.addWidget(button_box)
+    self.setLayout(vbox)
+
+  def accept(self):
+    self.result = self.name_edit.text()
+    self.data.new_category(self.result)
+    super(AddCatDialog, self).accept()
