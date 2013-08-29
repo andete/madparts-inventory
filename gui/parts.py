@@ -11,6 +11,7 @@ class Category(QtGui.QStandardItem):
   def __init__(self, name):
     self.name = name
     super(Category, self).__init__(name)
+    self.setEditable(False)
     self.setData(('category', name), Qt.UserRole)
 
 class PartModel(QtGui.QStandardItemModel):
