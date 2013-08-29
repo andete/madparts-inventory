@@ -47,7 +47,7 @@ class Data:
     self.sort()
 
   def sort(self):
-    self.cat.sort(key=lambda c:c.name.lower())
+    self.cat.sort()
 
   def new_category(self, name):
     c = Cat(self.dir+'/'+Cat.dirname_from_name(name), name)
