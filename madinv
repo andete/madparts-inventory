@@ -15,7 +15,7 @@ from data.data import Data
 
 class Left(QtGui.QWidget):
 
-  def __init__(self, part_model):
+  def __init__(self, part_model, parent):
     super(Left, self).__init__()
     vbox = QtGui.QVBoxLayout(self)
     hbox = QtGui.QHBoxLayout()
@@ -23,14 +23,33 @@ class Left(QtGui.QWidget):
     self.search_le = QtGui.QLineEdit()
     hbox.addWidget(self.search_le)
     vbox.addLayout(hbox)
-    self.part_tree = PartTree(part_model)
+    self.part_tree = PartTree(part_model, parent)
     vbox.addWidget(self.part_tree)
     self.setLayout(vbox)
 
-class Right(QtGui.QWidget):
+class Right(QtGui.QScrollArea):
 
   def __init__(self):
     super(Right, self).__init__()
+
+  def nothing(self):
+    self.setWidget(QtGui.QWidget())
+
+  def category(self, cat):
+    vbox = QtGui.QVBoxLayout()
+    vbox.addWidget(QtGui.QLabel("Category: " + cat.name))
+    items = cat.prop.items()
+    if len(items) > 0:
+      table = QtGui.QTableWidget(len(items), 2)
+      p = 0
+      for (k,v) in items:
+        table.setItem(p,0,QtGui.QTableWidgetItem(k))
+        table.setItem(p,1,QtGui.QTableWidgetItem(v))
+        p = p + 1
+      vbox.addWidget(table)
+    w = QtGui.QWidget()
+    w.setLayout(vbox)
+    self.setWidget(w)
 
 class MainWin(QtGui.QMainWindow):
 
@@ -56,7 +75,7 @@ class MainWin(QtGui.QMainWindow):
     self.add_action(helpMenu, '&About', self.about)
 
     splitter = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
-    self.left = Left(self.part_model)
+    self.left = Left(self.part_model, self)
     splitter.addWidget(self.left)
     self.right = Right()
     splitter.addWidget(self.right)
@@ -97,6 +116,14 @@ class MainWin(QtGui.QMainWindow):
     dialog = AddCatDialog(self, self.data)
     if dialog.exec_() == QtGui.QDialog.Accepted:
       self.part_model.add(dialog.result)
+
+  def category_selected(self, name):
+    cat = self.data.cat_by_name(name)
+    print name, cat.prop
+    self.right.category(cat)
+     
+  def part_selected(self, id):
+    print id
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")

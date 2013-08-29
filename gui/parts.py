@@ -38,6 +38,19 @@ class PartModel(QtGui.QStandardItemModel):
 
 class PartTree(QtGui.QTreeView):
 
-  def __init__(self, model):
-    super(PartTree, self).__init__()
+  def __init__(self, model, parent):
+    super(PartTree, self).__init__(parent)
+    self.parent = parent
     self.setModel(model)
+    self.selection_model = QtGui.QItemSelectionModel(model, self)
+    self.selection_model.currentRowChanged.connect(self.row_changed)
+    self.setRootIsDecorated(False)
+    self.setSelectionModel(self.selection_model)
+
+  def row_changed(self, current, previous):
+    (t,n) = current.data(QtCore.Qt.UserRole)
+    if t == 'category':
+      self.parent.category_selected(n)
+    else:
+      self.parent.part_selected(n)
+    

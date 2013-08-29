@@ -15,6 +15,7 @@ class Cat:
     self.dirname = dirname
     self.file = self.dirname + '/cat.ini'
     self.config = ConfigParser.SafeConfigParser()
+    self.prop = {}
     if name is not None:
       if os.path.exists(self.dirname):
         raise Exception("category already exists")
@@ -27,6 +28,10 @@ class Cat:
     else:
       self.config.read(self.file)
       self.name = self.config.get('main', 'name')
+      if self.config.has_section('properties'):
+        for (k,v) in self.config.items('properties'):
+          self.prop[k] = v
+        
 
   @staticmethod
   def dirname_from_name(name):
@@ -56,3 +61,9 @@ class Data:
   
   def __iter__(self):
     return iter(self.cat)
+
+  def cat_by_name(self, name):
+    for x in self.cat:
+      if x.name == name:
+        return x
+    return None
