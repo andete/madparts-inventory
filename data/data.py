@@ -12,13 +12,21 @@ default_basedir = "example"
 class DataException(Exception):
   pass
 
+class Part:
+
+  def __init__(self, cat, fn):
+    self.cat = cat
+    self.fn = fn
+    self.ffn = os.path.join(self.cat.dirname, self.fn)
+
 class Cat:
 
   def __init__(self, dirname, name=None):
     self.dirname = dirname
-    self.file = self.dirname + '/cat.ini'
+    self.file = os.path.join(self.dirname, 'cat.ini')
     self.config = ConfigParser.SafeConfigParser()
     self.prop = {}
+    self.parts = []
     if name is not None:
       if os.path.exists(self.dirname):
         raise DataException("category already exists")
@@ -51,7 +59,7 @@ class Cat:
     return fn
 
   def unique_fn(self, fn):
-    l = glob.glob(self.dirname + ("/%s-????.part" % fn))
+    l = glob.glob(os.path.join(self.dirname,"%s-????.part" % fn))
     if l == []:
       return fn + "-0000.part"
     def number(x):
@@ -83,7 +91,7 @@ class Data:
       raise DataException("basedir not a directory")
     g = self.dir + '/*.cat'
     #print g, os.getcwd()
-    for c in glob.glob(self.dir + '/*.cat'):
+    for c in glob.glob(os.path.join(self.dir, '*.cat')):
       #print "adding", c
       self.cat.append(Cat(c))
     self.sort()
@@ -101,7 +109,8 @@ class Data:
     return None
 
   def new_category(self, name):
-    c = Cat(self.dir+'/'+Cat.dirname_from_name(name), name)
+    ffn = os.path.join(self.dir, Cat.dirname_from_name(name))
+    c = Cat(ffn, name)
     self.cat.append(c)
     self.sort()
 
