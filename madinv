@@ -9,7 +9,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
 from gui.parts import PartModel, PartTree
-from gui.dialogs import PreferencesDialog, AddCatDialog
+from gui.dialogs import PreferencesDialog, AddCatDialog, AddPartDialog
 
 from data.data import Data
 
@@ -121,10 +121,15 @@ class MainWin(QtGui.QMainWindow):
   def add_cat(self):
     dialog = AddCatDialog(self, self.data)
     if dialog.exec_() == QtGui.QDialog.Accepted:
-      self.part_model.add(dialog.result)
+      self.part_model.add_cat(dialog.result)
 
   def add_part(self):
-    pass
+    if self.cat is None:
+      QtGui.QMessageBox.critical(self, "error", "select a category")
+      return
+    dialog = AddPartDialog(self, self.data, self.cat)
+    if dialog.exec_() == QtGui.QDialog.Accepted:
+      self.part_model.add_part(dialog.result)
 
   def category_selected(self, name):
     self.cat = self.data.cat_by_name(name)

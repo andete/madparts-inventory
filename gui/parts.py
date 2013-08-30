@@ -30,10 +30,13 @@ class PartModel(QtGui.QStandardItemModel):
       print cat.name
       root.appendRow(Category(cat.name))
 
-  def add(self, cat_name):
+  def add_cat(self, cat_name):
     root = self.invisibleRootItem()
     root.appendRow(Category(cat_name))
     self.sort(0)
+
+  def add_part(self, part_name):
+    print "TODO add_part"
      
 
 class PartTree(QtGui.QTreeView):
@@ -47,11 +50,15 @@ class PartTree(QtGui.QTreeView):
     self.setRootIsDecorated(False)
     self.setSelectionModel(self.selection_model)
     self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-    def _add(text, slot = None):
+    def _add(text, slot = None, shortcut = None):
       action = QtGui.QAction(text, self)
       self.addAction(action)
-      if slot != None: action.triggered.connect(slot)
-      else: action.setDisabled(True)
+      if slot != None: 
+        action.triggered.connect(slot)
+      else: 
+        action.setDisabled(True)
+      if shortcut != None: 
+        action.setShortcut(shortcut)
     _add("&Add Category", parent.add_cat)
     sep = QtGui.QAction(self)
     sep.setSeparator(True)

@@ -9,6 +9,9 @@ import ConfigParser
 
 default_basedir = "example"
 
+class DataException(Exception):
+  pass
+
 class Cat:
 
   def __init__(self, dirname, name=None):
@@ -18,7 +21,7 @@ class Cat:
     self.prop = {}
     if name is not None:
       if os.path.exists(self.dirname):
-        raise Exception("category already exists")
+        raise DataException("category already exists")
       self.config.add_section('main')
       self.config.set('main', 'name', name)
       os.mkdir(self.dirname)
@@ -31,11 +34,45 @@ class Cat:
       if self.config.has_section('properties'):
         for (k,v) in self.config.items('properties'):
           self.prop[k] = v
-        
 
   @staticmethod
   def dirname_from_name(name):
     return name.replace(' ','_') + '.cat'
+
+  @staticmethod
+  def file_name_for_part(name, package, value):
+    if name == "":
+      raise DataException("name is mandatory")
+    fn = name
+    if package != "":
+      fn += '-' + package
+    if value != "":
+      fn += '-' + value
+    return fn
+
+  def unique_fn(self, fn):
+    l = glob.glob(self.dirname + ("/%s-????.part" % fn))
+    if l == []:
+      return fn + "-0000.part"
+    def number(x):
+      y = re.search('-(....)\.part', x)
+      if y is None:
+        return 0
+      return int(y)
+    n = [number(x) for x in l]
+    m = max(n)
+    m_res = m
+    for i in range(0, m):
+      if i not in n:
+        m_res = i
+        break
+    return fn + ("-%04d.part" % m_res)
+
+  def new_part(self, name, package, value):
+    fn = Cat.file_name_for_part(name, package, value)
+    fn = self.unique_fn(fn)
+    print fn
+    "TODO data make part"
 
 class Data:
 
@@ -43,7 +80,7 @@ class Data:
     self.cat = []
     self.dir = settings.value("basedir", default_basedir)
     if not os.path.isdir(self.dir):
-      raise Exception("basedir not a directory")
+      raise DataException("basedir not a directory")
     g = self.dir + '/*.cat'
     #print g, os.getcwd()
     for c in glob.glob(self.dir + '/*.cat'):
@@ -53,11 +90,6 @@ class Data:
 
   def sort(self):
     self.cat.sort()
-
-  def new_category(self, name):
-    c = Cat(self.dir+'/'+Cat.dirname_from_name(name), name)
-    self.cat.append(c)
-    self.sort()
   
   def __iter__(self):
     return iter(self.cat)
@@ -67,3 +99,10 @@ class Data:
       if x.name == name:
         return x
     return None
+
+  def new_category(self, name):
+    c = Cat(self.dir+'/'+Cat.dirname_from_name(name), name)
+    self.cat.append(c)
+    self.sort()
+
+

@@ -6,7 +6,7 @@
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
-from data.data import default_basedir
+from data.data import default_basedir, DataException
 
 class PreferencesDialog(QtGui.QDialog):
 
@@ -76,5 +76,45 @@ class AddCatDialog(QtGui.QDialog):
 
   def accept(self):
     self.result = self.name_edit.text()
-    self.data.new_category(self.result)
-    super(AddCatDialog, self).accept()
+    try:
+      self.data.new_category(self.result)
+      super(AddCatDialog, self).accept()
+    except DataException as e:
+      QtGui.QMessageBox.critical(self, "error", str(e))
+
+
+class AddPartDialog(QtGui.QDialog):
+
+  def __init__(self, parent, data, cat):
+    super(AddPartDialog, self).__init__(parent)
+    self.data = data
+    self.cat = cat
+    self.setWindowTitle('Add Part')
+    self.resize(640,160)
+    vbox = QtGui.QVBoxLayout()
+    form_layout = QtGui.QFormLayout()
+    self.name_edit = QtGui.QLineEdit()
+    form_layout.addRow("Category: ", QtGui.QLabel(self.cat.name))
+    form_layout.addRow("Name: ", self.name_edit)
+    self.package_edit = QtGui.QLineEdit()
+    form_layout.addRow("Package: ", self.package_edit)
+    self.value_edit = QtGui.QLineEdit()
+    form_layout.addRow("Value: ", self.value_edit)
+    vbox.addLayout(form_layout)
+    buttons = QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel
+    button_box = QtGui.QDialogButtonBox(buttons, QtCore.Qt.Horizontal)
+    button_box.accepted.connect(self.accept)
+    button_box.rejected.connect(self.reject)
+    vbox.addWidget(button_box)
+    self.setLayout(vbox)
+
+  def accept(self):
+    name = self.name_edit.text()
+    package = self.package_edit.text()
+    value = self.value_edit.text()
+    self.result = (name, package, value)
+    try:
+      self.cat.new_part(name, package, value)
+      super(AddPartDialog, self).accept()
+    except DataException as e:
+      QtGui.QMessageBox.critical(self, "error", str(e))
