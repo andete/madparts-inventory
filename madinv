@@ -32,10 +32,10 @@ class Right(QtGui.QScrollArea):
   def __init__(self):
     super(Right, self).__init__()
 
-  def nothing(self):
+  def set_nothing(self):
     self.setWidget(QtGui.QWidget())
 
-  def category(self, cat):
+  def set_category(self, cat):
     vbox = QtGui.QVBoxLayout()
     vbox.addWidget(QtGui.QLabel("Category: " + cat.name))
     items = cat.prop.items()
@@ -57,6 +57,8 @@ class MainWin(QtGui.QMainWindow):
   def __init__(self):
     super(MainWin, self).__init__()
 
+    self.cat = None
+
     self.settings = QtCore.QSettings()
 
     self.data = Data(self.settings)
@@ -71,6 +73,9 @@ class MainWin(QtGui.QMainWindow):
 
     groupMenu = menuBar.addMenu('&Category')
     self.add_action(groupMenu, '&Add', self.add_cat)
+    
+    groupMenu = menuBar.addMenu('&Part')
+    self.add_action(groupMenu, '&Add', self.add_part)
 
     helpMenu = menuBar.addMenu('&Help')
     self.add_action(helpMenu, '&About', self.about)
@@ -118,10 +123,13 @@ class MainWin(QtGui.QMainWindow):
     if dialog.exec_() == QtGui.QDialog.Accepted:
       self.part_model.add(dialog.result)
 
+  def add_part(self):
+    pass
+
   def category_selected(self, name):
-    cat = self.data.cat_by_name(name)
-    print name, cat.prop
-    self.right.category(cat)
+    self.cat = self.data.cat_by_name(name)
+    print name, self.cat.prop
+    self.right.set_category(self.cat)
      
   def part_selected(self, id):
     print id
