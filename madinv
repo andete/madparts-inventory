@@ -41,6 +41,7 @@ class Right(QtGui.QScrollArea):
     items = cat.prop.items()
     if len(items) > 0:
       table = QtGui.QTableWidget(len(items), 2)
+      table.setHorizontalHeaderLabels(['name','value'])
       p = 0
       for (k,v) in items:
         table.setItem(p,0,QtGui.QTableWidgetItem(k))
