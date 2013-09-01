@@ -31,6 +31,7 @@ class Right(QtGui.QScrollArea):
 
   def __init__(self):
     super(Right, self).__init__()
+    self.setWidgetResizable(True)
 
   def set_nothing(self):
     self.setWidget(QtGui.QWidget())
@@ -68,8 +69,14 @@ class Right(QtGui.QScrollArea):
     form_layout.addRow('Single-value', single_value)
     if part.single_value:
       add('Quantity', str(part.quantity))
-    # bought when where price
+      add('Footprint', 'TODO')
     vbox.addLayout(form_layout)
+    if not part.single_value:
+      pass
+    # bought when where price
+    buytable = QtGui.QTableWidget(1, 6)
+    buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
+    vbox.addWidget(buytable)
     w = QtGui.QWidget()
     w.setLayout(vbox)
     self.setWidget(w)
