@@ -12,11 +12,11 @@ default_basedir = "example"
 class DataException(Exception):
   pass
 
-def config_get(config, section, name, default=None):
+def get(config_get, section, name, default=None):
   try:
-    return config.get(section, name)
+    return config_get(section, name)
   except ConfigParser.NoOptionError:
-    return None
+    return default
 
 def config_set(config, section, name, value):
   if value != None:
@@ -45,9 +45,11 @@ class Part:
   def __read_config(self):
     if self.config.read(self.ffn) == []:
       raise DataException('file not found ' + self.ffn)
-    self.name = self.config.get('main', 'name')
-    self.package = config_get(self.config, 'main', 'package')
+    self.name = get(self.config.get, 'main', 'name')
+    self.package = get(self.config.get, 'main', 'package')
     self.full_name = Part.full_name(self.name, self.package)
+    self.single_value = get(self.config.getboolean, 'main','single-value', True)
+    self.quantity = get(self.config.getint, 'main','quantity', 0)
 
   @staticmethod
   def full_name(name, package):

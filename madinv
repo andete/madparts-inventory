@@ -54,10 +54,22 @@ class Right(QtGui.QScrollArea):
 
   def set_part(self, part):
     vbox = QtGui.QVBoxLayout()
-    vbox.addWidget(QtGui.QLabel("Category: " + part.cat.name))
-    vbox.addWidget(QtGui.QLabel("Part: " + part.full_name))
-    vbox.addWidget(QtGui.QLabel("Name: " + part.name))
-    vbox.addWidget(QtGui.QLabel("Package: " + part.package))
+    form_layout = QtGui.QFormLayout()
+    def add(k,v,ro=False):
+      x = QtGui.QLineEdit(v)
+      x.setReadOnly(ro)
+      form_layout.addRow(k, x)
+    add("Category", part.cat.name, ro=True)
+    add("Part", part.full_name, ro=True)
+    add("Name", part.name, ro=True)
+    add("Package", part.package, ro=True)
+    single_value = QtGui.QCheckBox()
+    single_value.setChecked(part.single_value)
+    form_layout.addRow('Single-value', single_value)
+    if part.single_value:
+      add('Quantity', str(part.quantity))
+    # bought when where price
+    vbox.addLayout(form_layout)
     w = QtGui.QWidget()
     w.setLayout(vbox)
     self.setWidget(w)
