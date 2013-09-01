@@ -52,6 +52,16 @@ class Right(QtGui.QScrollArea):
     w.setLayout(vbox)
     self.setWidget(w)
 
+  def set_part(self, part):
+    vbox = QtGui.QVBoxLayout()
+    vbox.addWidget(QtGui.QLabel("Category: " + part.cat.name))
+    vbox.addWidget(QtGui.QLabel("Part: " + part.full_name))
+    vbox.addWidget(QtGui.QLabel("Name: " + part.name))
+    vbox.addWidget(QtGui.QLabel("Package: " + part.package))
+    w = QtGui.QWidget()
+    w.setLayout(vbox)
+    self.setWidget(w)
+
 class MainWin(QtGui.QMainWindow):
 
   def __init__(self):
@@ -132,12 +142,15 @@ class MainWin(QtGui.QMainWindow):
       self.part_model.add_part(dialog.result)
 
   def category_selected(self, name):
+    self.part = None
     self.cat = self.data.cat_by_name(name)
     print name, self.cat.prop
     self.right.set_category(self.cat)
      
-  def part_selected(self, id):
-    print id
+  def part_selected(self, cat_name, full_name):
+    self.cat = self.data.cat_by_name(cat_name)
+    self.part = self.cat.part_by_fullname(full_name)
+    self.right.set_part(self.part)
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")

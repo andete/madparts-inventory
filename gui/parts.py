@@ -8,11 +8,11 @@ from PySide.QtCore import Qt
 
 class Part(QtGui.QStandardItem):
 
-  def __init__(self, name):
+  def __init__(self, catname, name):
     self.name = name
     super(Part, self).__init__(name)
     self.setEditable(False)
-    self.setData(('part', name), Qt.UserRole)
+    self.setData(('part', catname, name), Qt.UserRole)
 
 class Category(QtGui.QStandardItem):
 
@@ -20,10 +20,10 @@ class Category(QtGui.QStandardItem):
     self.name = name
     super(Category, self).__init__(name)
     self.setEditable(False)
-    self.setData(('category', name), Qt.UserRole)
+    self.setData(('category', name, None), Qt.UserRole)
 
   def add_part(self, name):
-    self.appendRow(Part(name))
+    self.appendRow(Part(self.name, name))
 
 class PartModel(QtGui.QStandardItemModel):
 
@@ -54,7 +54,7 @@ class PartModel(QtGui.QStandardItemModel):
     rc = root.rowCount()
     for i in range(0, rc):
       cat_item = root.child(i)
-      (c, name) = cat_item.getData(Qt.UserRole)
+      (c, name) = cat_item.data(Qt.UserRole)
       if name == part.cat.name:
         cat_item.add_part(part.full_name)
         cat_item.sort(0)
@@ -87,9 +87,9 @@ class PartTree(QtGui.QTreeView):
     self.expandAll()
 
   def row_changed(self, current, previous):
-    (t,n) = current.data(QtCore.Qt.UserRole)
+    (t,cn, n) = current.data(QtCore.Qt.UserRole)
     if t == 'category':
-      self.parent.category_selected(n)
+      self.parent.category_selected(cn)
     else:
-      self.parent.part_selected(n)
+      self.parent.part_selected(cn, n)
     

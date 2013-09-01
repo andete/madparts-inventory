@@ -96,6 +96,12 @@ class Cat:
   def __iter__(self):
     return iter(self.parts)
 
+  def part_by_fullname(self, full_name):
+    try:
+      return next((x for x in self.parts if x.full_name == full_name))
+    except StopIteration:
+      raise DataException("part not found " + full_name)
+
   @staticmethod
   def dirname_from_name(name):
     return name.replace(' ','_') + '.cat'
