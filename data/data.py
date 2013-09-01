@@ -13,7 +13,10 @@ class DataException(Exception):
   pass
 
 def config_get(config, section, name, default=None):
-  return config.get(section, name)
+  try:
+    return config.get(section, name)
+  except ConfigParser.NoOptionError:
+    return None
 
 def config_set(config, section, name, value):
   if value != None:
@@ -29,15 +32,13 @@ class Part:
     if os.path.exists(self.ffn):
       self.__read_config()
 
-  def set_npv(self, name, package, value):
+  def set_np(self, name, package):
     self.name = name
     self.package = package
-    self.value = value
     self.config.add_section('main')
     config_set(self.config, 'main', 'name', self.name)
     config_set(self.config, 'main', 'package', self.package)
-    config_set(self.config, 'main', 'value', self.value)
-    self.full_name = Part.full_name(self.name, self.package, self.value)
+    self.full_name = Part.full_name(self.name, self.package)
     with open(self.ffn, 'w+') as f:
       self.config.write(f)
 
@@ -46,18 +47,15 @@ class Part:
       raise DataException('file not found ' + self.ffn)
     self.name = self.config.get('main', 'name')
     self.package = config_get(self.config, 'main', 'package')
-    self.value = config_get(self.config, 'main', 'value')
-    self.full_name = Part.full_name(self.name, self.package, self.value)
+    self.full_name = Part.full_name(self.name, self.package)
 
   @staticmethod
-  def full_name(name, package, value):
+  def full_name(name, package):
     if name == "":
       raise DataException("name is mandatory")
     fn = name
-    if package != "":
+    if package != "" and package != None:
       fn += '-' + package
-    if value != "":
-      fn += '-' + value
     return fn
 
 class Cat:
@@ -120,13 +118,13 @@ class Cat:
         break
     return fn + ("-%04d.part" % m_res)
 
-  def new_part(self, name, package, value):
+  def new_part(self, name, package):
     if name == '':
       raise DataException('name is not optional')
-    full_name = Part.full_name(name, package, value)
+    full_name = Part.full_name(name, package)
     fn = self.unique_fn(full_name)
     part = Part(self, fn)
-    part.set_npv(name, package, value)
+    part.set_np(name, package)
     return part
 
 class Data:

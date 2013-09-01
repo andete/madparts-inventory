@@ -53,7 +53,7 @@ class PartModel(QtGui.QStandardItemModel):
     root = self.invisibleRootItem()
     rc = root.rowCount()
     for i in range(0, rc):
-      cat_item = root.item(i)
+      cat_item = root.child(i)
       (c, name) = cat_item.getData(Qt.UserRole)
       if name == part.cat.name:
         cat_item.add_part(part.full_name)

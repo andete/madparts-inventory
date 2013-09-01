@@ -98,8 +98,6 @@ class AddPartDialog(QtGui.QDialog):
     form_layout.addRow("Name: ", self.name_edit)
     self.package_edit = QtGui.QLineEdit()
     form_layout.addRow("Package: ", self.package_edit)
-    self.value_edit = QtGui.QLineEdit()
-    form_layout.addRow("Value: ", self.value_edit)
     vbox.addLayout(form_layout)
     buttons = QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel
     button_box = QtGui.QDialogButtonBox(buttons, QtCore.Qt.Horizontal)
@@ -111,10 +109,9 @@ class AddPartDialog(QtGui.QDialog):
   def accept(self):
     name = self.name_edit.text().strip().replace(' ','_')
     package = self.package_edit.text().strip().replace(' ','_')
-    value = self.value_edit.text().strip().replace(' ','_')
     self.result = None
     try:
-      self.result = self.cat.new_part(name, package, value)
+      self.result = self.cat.new_part(name, package)
       super(AddPartDialog, self).accept()
     except DataException as e:
       QtGui.QMessageBox.critical(self, "error", str(e))
