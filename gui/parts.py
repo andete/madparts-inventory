@@ -23,7 +23,6 @@ class Category(QtGui.QStandardItem):
     self.setData(('category', name), Qt.UserRole)
 
   def add_part(self, name):
-    print self.name + " append part: " + name
     self.appendRow(Part(name))
 
 class PartModel(QtGui.QStandardItemModel):
@@ -40,11 +39,10 @@ class PartModel(QtGui.QStandardItemModel):
     root = self.invisibleRootItem()
     for cat in self.mdata:
       print cat.name
-      root.appendRow(Category(cat.name))
-      rc = root.rowCount()
-      cat_item = root.child(rc-1)
-      for part in cat.parts:
+      cat_item = Category(cat.name)
+      for part in cat:
         cat_item.add_part(part.full_name)
+      root.appendRow(cat_item)
 
   def add_cat(self, cat_name):
     root = self.invisibleRootItem()
@@ -59,8 +57,8 @@ class PartModel(QtGui.QStandardItemModel):
       (c, name) = cat_item.getData(Qt.UserRole)
       if name == part.cat.name:
         cat_item.add_part(part.full_name)
+        cat_item.sort(0)
         break
-     
 
 class PartTree(QtGui.QTreeView):
 
@@ -70,7 +68,6 @@ class PartTree(QtGui.QTreeView):
     self.setModel(model)
     self.selection_model = QtGui.QItemSelectionModel(model, self)
     self.selection_model.currentRowChanged.connect(self.row_changed)
-    self.setRootIsDecorated(False)
     self.setSelectionModel(self.selection_model)
     self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
     def _add(text, slot = None, shortcut = None):
@@ -87,6 +84,7 @@ class PartTree(QtGui.QTreeView):
     sep.setSeparator(True)
     self.addAction(sep)
     _add("&Add Part", parent.add_part)
+    self.expandAll()
 
   def row_changed(self, current, previous):
     (t,n) = current.data(QtCore.Qt.UserRole)

@@ -95,6 +95,9 @@ class Cat:
      l.sort(key=lambda p:p.name)
      return l
 
+  def __iter__(self):
+    return iter(self.parts)
+
   @staticmethod
   def dirname_from_name(name):
     return name.replace(' ','_') + '.cat'
