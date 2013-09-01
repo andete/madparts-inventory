@@ -6,6 +6,14 @@
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
+class Part(QtGui.QStandardItem):
+
+  def __init__(self, name):
+    self.name = name
+    super(Part, self).__init__(name)
+    self.setEditable(False)
+    self.setData(('part', name), Qt.UserRole)
+
 class Category(QtGui.QStandardItem):
 
   def __init__(self, name):
@@ -13,6 +21,10 @@ class Category(QtGui.QStandardItem):
     super(Category, self).__init__(name)
     self.setEditable(False)
     self.setData(('category', name), Qt.UserRole)
+
+  def add_part(self, name):
+    print self.name + " append part: " + name
+    self.appendRow(Part(name))
 
 class PartModel(QtGui.QStandardItemModel):
 
@@ -29,14 +41,25 @@ class PartModel(QtGui.QStandardItemModel):
     for cat in self.mdata:
       print cat.name
       root.appendRow(Category(cat.name))
+      rc = root.rowCount()
+      cat_item = root.child(rc-1)
+      for part in cat.parts:
+        cat_item.add_part(part.full_name)
 
   def add_cat(self, cat_name):
     root = self.invisibleRootItem()
     root.appendRow(Category(cat_name))
     self.sort(0)
 
-  def add_part(self, part_name):
-    print "TODO add_part"
+  def add_part(self, part):
+    root = self.invisibleRootItem()
+    rc = root.rowCount()
+    for i in range(0, rc):
+      cat_item = root.item(i)
+      (c, name) = cat_item.getData(Qt.UserRole)
+      if name == part.cat.name:
+        cat_item.add_part(part.full_name)
+        break
      
 
 class PartTree(QtGui.QTreeView):

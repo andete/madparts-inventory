@@ -109,12 +109,12 @@ class AddPartDialog(QtGui.QDialog):
     self.setLayout(vbox)
 
   def accept(self):
-    name = self.name_edit.text()
-    package = self.package_edit.text()
-    value = self.value_edit.text()
-    self.result = (name, package, value)
+    name = self.name_edit.text().strip().replace(' ','_')
+    package = self.package_edit.text().strip().replace(' ','_')
+    value = self.value_edit.text().strip().replace(' ','_')
+    self.result = None
     try:
-      self.cat.new_part(name, package, value)
+      self.result = self.cat.new_part(name, package, value)
       super(AddPartDialog, self).accept()
     except DataException as e:
       QtGui.QMessageBox.critical(self, "error", str(e))
