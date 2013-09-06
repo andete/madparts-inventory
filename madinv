@@ -64,16 +64,19 @@ class Right(QtGui.QScrollArea):
     add("Part", part.full_name, ro=True)
     add("Name", part.name, ro=True)
     add("Package", part.package, ro=True)
+    add("Location", part.location)
+    add('Footprint', part.footprint)
     single_value = QtGui.QCheckBox()
     single_value.setChecked(part.single_value)
     form_layout.addRow('Single-value', single_value)
     if part.single_value:
       add('Quantity', str(part.quantity))
-      add('Footprint', 'TODO')
     vbox.addLayout(form_layout)
     if not part.single_value:
-      pass
-    # bought when where price
+      valtable = QtGui.QTableWidget(1, 2)
+      valtable.setHorizontalHeaderLabels(['value','quantity'])
+      vbox.addWidget(valtable)
+    # bought when where id price
     buytable = QtGui.QTableWidget(1, 6)
     buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     vbox.addWidget(buytable)

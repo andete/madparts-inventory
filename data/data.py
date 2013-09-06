@@ -48,8 +48,10 @@ class Part:
     self.name = get(self.config.get, 'main', 'name')
     self.package = get(self.config.get, 'main', 'package')
     self.full_name = Part.full_name(self.name, self.package)
+    self.location = get(self.config.get, 'main','location', '')
+    self.footprint = get(self.config.get, 'main','footprint', '')
     self.single_value = get(self.config.getboolean, 'main','single-value', True)
-    self.quantity = get(self.config.getint, 'main','quantity', 0)
+    self.quantity = get(self.config.get, 'main','quantity', '')
 
   @staticmethod
   def full_name(name, package):
