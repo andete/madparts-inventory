@@ -54,6 +54,7 @@ class Right(QtGui.QScrollArea):
     self.setWidget(w)
 
   def set_part(self, part):
+    self.part = part
     vbox = QtGui.QVBoxLayout()
     form_layout = QtGui.QFormLayout()
     def add(k,v,ro=False):
@@ -66,9 +67,10 @@ class Right(QtGui.QScrollArea):
     add("Package", part.package, ro=True)
     add("Location", part.location)
     add('Footprint', part.footprint)
-    single_value = QtGui.QCheckBox()
-    single_value.setChecked(part.single_value)
-    form_layout.addRow('Single-value', single_value)
+    self.single_value = QtGui.QCheckBox()
+    self.single_value.setChecked(part.single_value)
+    self.single_value.stateChanged.connect(self.single_value_changed)
+    form_layout.addRow('Single-value', self.single_value)
     if part.single_value:
       add('Quantity', str(part.quantity))
     vbox.addLayout(form_layout)
@@ -83,6 +85,10 @@ class Right(QtGui.QScrollArea):
     w = QtGui.QWidget()
     w.setLayout(vbox)
     self.setWidget(w)
+
+  def single_value_changed(self):
+    self.part.single_value = self.single_value.isChecked()
+    self.set_part(self.part)
 
 class MainWin(QtGui.QMainWindow):
 
