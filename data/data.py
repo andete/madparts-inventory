@@ -53,6 +53,9 @@ class Part:
     self.single_value = get(self.config.getboolean, 'main','single-value', True)
     self.quantity = get(self.config.get, 'main','quantity', '')
 
+  def save(self):
+    print "TODO save part"
+
   @staticmethod
   def full_name(name, package):
     if name == "":

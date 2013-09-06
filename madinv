@@ -3,7 +3,7 @@
 # (c) 2013 Joost Yervante Damad <joost@damad.be>
 # License: GPL
 
-import sys
+import sys, signal
 
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
@@ -29,9 +29,10 @@ class Left(QtGui.QWidget):
 
 class Right(QtGui.QScrollArea):
 
-  def __init__(self):
-    super(Right, self).__init__()
+  def __init__(self, parent):
+    super(Right, self).__init__(parent)
     self.setWidgetResizable(True)
+    self.parent = parent
 
   def set_nothing(self):
     self.setWidget(QtGui.QWidget())
@@ -54,7 +55,6 @@ class Right(QtGui.QScrollArea):
     self.setWidget(w)
 
   def set_part(self, part):
-    self.part = part
     vbox = QtGui.QVBoxLayout()
     form_layout = QtGui.QFormLayout()
     def add(k,v,ro=False):
@@ -78,7 +78,6 @@ class Right(QtGui.QScrollArea):
       valtable = QtGui.QTableWidget(1, 2)
       valtable.setHorizontalHeaderLabels(['value','quantity'])
       vbox.addWidget(valtable)
-    # bought when where id price
     buytable = QtGui.QTableWidget(1, 6)
     buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     vbox.addWidget(buytable)
@@ -87,8 +86,8 @@ class Right(QtGui.QScrollArea):
     self.setWidget(w)
 
   def single_value_changed(self):
-    self.part.single_value = self.single_value.isChecked()
-    self.set_part(self.part)
+    self.parent.part.single_value = self.single_value.isChecked()
+    self.set_part(self.parent.part)
 
 class MainWin(QtGui.QMainWindow):
 
@@ -96,6 +95,7 @@ class MainWin(QtGui.QMainWindow):
     super(MainWin, self).__init__()
 
     self.cat = None
+    self.part = None
 
     self.settings = QtCore.QSettings()
 
@@ -121,14 +121,22 @@ class MainWin(QtGui.QMainWindow):
     splitter = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
     self.left = Left(self.part_model, self)
     splitter.addWidget(self.left)
-    self.right = Right()
+    self.right = Right(self)
     splitter.addWidget(self.right)
     self.setCentralWidget(splitter)
+    # make right part twice as large
+    splitter.setStretchFactor(1, 2)
+    self.status("Ready.")
 
-    self.statusBar().showMessage("Ready.")
+  def status(self, msg):
+    self.statusBar().showMessage(msg)
 
   def close(self):
     QtGui.qApp.quit()
+
+  def save(self):
+    if self.part != None:
+      self.part.save()
 
   def about(self):
     a = """
@@ -187,6 +195,9 @@ def gui_main():
   app = QtGui.QApplication(["madinv"])
   widget = MainWin()
   widget.show()
+  # make sure SIGINT doesn't kill our app so the data can be saved
+  signal.signal(signal.SIGINT, signal.SIG_DFL)
+  app.aboutToQuit.connect(widget.save)
   return app.exec_()
 
 if __name__ == '__main__':
