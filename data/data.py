@@ -7,54 +7,57 @@ import os, os.path
 import glob
 import ConfigParser
 
+class Config(ConfigParser.SafeConfigParser):
+  pass
+
 default_basedir = "example"
 
 class DataException(Exception):
   pass
 
-def get(config_get, section, name, default=None):
+# with default
+def wd(d, f):
   try:
-    return config_get(section, name)
+    f()
   except ConfigParser.NoOptionError:
-    return default
-
-def config_set(config, section, name, value):
-  if value != None:
-    config.set(section, name, value)
-
+    return d
+  
 class Part:
 
   def __init__(self, cat, fn):
     self.cat = cat
     self.fn = fn
     self.ffn = os.path.join(self.cat.dirname, self.fn)
-    self.config = ConfigParser.SafeConfigParser()
+    self.c = Config()
     if os.path.exists(self.ffn):
       self.__read_config()
 
   def set_np(self, name, package):
     self.name = name
     self.package = package
-    self.config.add_section('main')
-    config_set(self.config, 'main', 'name', self.name)
-    config_set(self.config, 'main', 'package', self.package)
+    self.c.add_section('main')
+    self.c.set('main', 'name', self.name)
+    self.c.set('main', 'package', self.package)
     self.full_name = Part.full_name(self.name, self.package)
     with open(self.ffn, 'w+') as f:
-      self.config.write(f)
+      self.c.write(f)
 
   def __read_config(self):
-    if self.config.read(self.ffn) == []:
+    if self.c.read(self.ffn) == []:
       raise DataException('file not found ' + self.ffn)
-    self.name = get(self.config.get, 'main', 'name')
-    self.package = get(self.config.get, 'main', 'package')
+    self.name = self.c.get('main', 'name')
+    self.package = self.c.get('main', 'package')
     self.full_name = Part.full_name(self.name, self.package)
-    self.location = get(self.config.get, 'main','location', '')
-    self.footprint = get(self.config.get, 'main','footprint', '')
-    self.single_value = get(self.config.getboolean, 'main','single-value', True)
-    self.quantity = get(self.config.get, 'main','quantity', '')
+    self.location = wd('', lambda: self.c.get('main','location'))
+    self.footprint = wd('', lambda: self.c.get('main','footprint'))
+    self.single_value = wd(True, lambda: self.c.getboolean('main','single-value'))
+    self.quantity = wd('', lambda: self.c.get('main','quantity', ''))
 
   def save(self):
-    print "TODO save part"
+    self.c.set('main', 'name', self.name)
+    self.c.set('main', 'location', self.location)
+    self.c.set('main', 'footprint', self.footprint)
+    self.c.setbool('main', 'single-value', self.single_value)
 
   @staticmethod
   def full_name(name, package):
@@ -70,7 +73,7 @@ class Cat:
   def __init__(self, dirname, name=None):
     self.dirname = dirname
     self.file = os.path.join(self.dirname, 'cat.ini')
-    self.config = ConfigParser.SafeConfigParser()
+    self.c = Config()
     self.prop = {}
     if name is not None:
       self.__make_config()
@@ -81,18 +84,18 @@ class Cat:
   def __make_config(self):
     if os.path.exists(self.dirname):
       raise DataException("category already exists")
-      self.config.add_section('main')
-      self.config.set('main', 'name', name)
+      self.c.add_section('main')
+      self.c.set('main', 'name', name)
       os.mkdir(self.dirname)
       with open(self.file, 'w+') as f:
-        self.config.write(f)
+        self.c.write(f)
       self.name = name
   
   def __read_config(self):
-    self.config.read(self.file)
-    self.name = self.config.get('main', 'name')
-    if self.config.has_section('properties'):
-      for (k,v) in self.config.items('properties'):
+    self.c.read(self.file)
+    self.name = self.c.get('main', 'name')
+    if self.c.has_section('properties'):
+      for (k,v) in self.c.items('properties'):
         self.prop[k] = v
 
   def __scan_parts(self): 
