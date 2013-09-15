@@ -3,7 +3,7 @@
 # (c) 2013 Joost Yervante Damad <joost@damad.be>
 # License: GPL
 
-import sys, signal
+import os, sys, signal, subprocess
 
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
@@ -73,11 +73,13 @@ class Right(QtGui.QScrollArea):
     form_layout.addRow('Single-value', self.single_value)
     if part.single_value:
       add('Quantity', str(part.quantity))
+      add('Threshold', str(part.threshold))
     vbox.addLayout(form_layout)
     if not part.single_value:
       valtable = QtGui.QTableWidget(1, 2)
-      valtable.setHorizontalHeaderLabels(['value','quantity'])
+      valtable.setHorizontalHeaderLabels(['value','quantity', 'threshold'])
       vbox.addWidget(valtable)
+    vbox.addWidget(QtGui.QLabel("Buy"))
     buytable = QtGui.QTableWidget(1, 6)
     buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     vbox.addWidget(buytable)
@@ -114,6 +116,9 @@ class MainWin(QtGui.QMainWindow):
     
     groupMenu = menuBar.addMenu('&Part')
     self.add_action(groupMenu, '&Add', self.add_part)
+
+    gitMenu = menuBar.addMenu('&Git')
+    self.add_action(gitMenu, '&Push', self.git_push)
 
     helpMenu = menuBar.addMenu('&Help')
     self.add_action(helpMenu, '&About', self.about)
@@ -187,6 +192,29 @@ class MainWin(QtGui.QMainWindow):
     self.cat = self.data.cat_by_name(cat_name)
     self.part = self.cat.part_by_fullname(full_name)
     self.right.set_part(self.part)
+
+  def git_push(self):
+    stored_cwd = os.getcwd()
+    try:
+      os.chdir(self.data.dir)
+      # make sure new files are added
+      # will not fail when no files are to be added
+      subprocess.check_call(['git', 'add', '.'])
+      # commit and then push
+      try:
+        subprocess.check_call(["git", "commit", '-a', '--allow-empty-message', '-m', ''])
+      except subprocess.CalledProcessError:
+        QtGui.QMessageBox.critical(self, "error", "failure to commit, no changes?")
+        raise
+      try:
+        subprocess.check_call(["git", "push"])
+      except subprocess.CalledProcessError:
+        QtGui.QMessageBox.critical(self, "error", "failure to push; git repo settings correct?")
+        raise
+    except subprocess.CalledProcessError:
+      pass
+    finally:
+      os.chdir(stored_cwd)
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")

@@ -1,4 +1,9 @@
 [main]
 name = atxmega32e5
 package = au
+location = 
+footprint = 
+single-value = True
+quantity = 
+threshold = 
 
