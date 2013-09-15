@@ -40,6 +40,7 @@ class Part:
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'package', self.package)
     self.full_name = Part.full_name(self.name, self.package)
+    self.full_name_bak = self.full_name
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
 
@@ -49,6 +50,7 @@ class Part:
     self.name = self.c.get('main', 'name')
     self.package = self.c.get('main', 'package')
     self.full_name = Part.full_name(self.name, self.package)
+    self.full_name_bak = self.full_name
     self.location = wd('', lambda: self.c.get('main','location'))
     self.footprint = wd('', lambda: self.c.get('main','footprint'))
     self.single_value = wd(True, lambda: self.c.getboolean('main','single-value'))
@@ -57,6 +59,7 @@ class Part:
 
   def save(self):
     print 'saving', self.name
+    self.full_name = Part.full_name(self.name, self.package)
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'location', self.location)
     self.c.set('main', 'footprint', self.footprint)
@@ -65,6 +68,11 @@ class Part:
     self.c.set('main', 'threshold', self.threshold)
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
+    if self.full_name_bak != self.full_name:
+     res = (self.full_name_bak, self.full_name)
+     self.full_name_bak = self.full_name
+     return res
+    return None
 
   @staticmethod
   def full_name(name, package):

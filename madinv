@@ -40,17 +40,21 @@ class Right(QtGui.QScrollArea):
     self.setWidget(QtGui.QWidget())
 
   def set_category(self, cat):
+    res = None
     if self.part != None:
-      self.part.sync()
+      res = self.part.sync()
       self.part = None
     self.setWidget(gui.part.Category(cat))
+    return res
 
   def set_part(self, part):
+    res = None
     if self.part != None:
-      self.part.sync()
+      res = self.part.sync()
       self.part = None
     self.part = gui.part.Part(part)
     self.setWidget(self.part)
+    return res
 
 class MainWin(QtGui.QMainWindow):
 
@@ -145,14 +149,20 @@ class MainWin(QtGui.QMainWindow):
 
   def category_selected(self, name):
     self.part = None
+    old_cat = self.cat
     self.cat = self.data.cat_by_name(name)
     print name, self.cat.prop
-    self.right.set_category(self.cat)
+    res = self.right.set_category(self.cat)
+    if res != None:
+      self.part_model.rename_part(old_cat, res[0], res[1])
      
   def part_selected(self, cat_name, full_name):
+    old_cat = self.cat
     self.cat = self.data.cat_by_name(cat_name)
     self.part = self.cat.part_by_fullname(full_name)
-    self.right.set_part(self.part)
+    res = self.right.set_part(self.part)
+    if res != None:
+      self.part_model.rename_part(old_cat, res[0], res[1])
 
   def git_push(self):
     stored_cwd = os.getcwd()

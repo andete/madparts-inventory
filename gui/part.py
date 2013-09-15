@@ -95,4 +95,4 @@ class Part(QtGui.QWidget):
     p.quantity = self.quantity.text()
     p.threshold = self.threshold.text()
     # TODO more
-    p.save()
+    return p.save()

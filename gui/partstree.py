@@ -10,9 +10,17 @@ class Part(QtGui.QStandardItem):
 
   def __init__(self, catname, name):
     self.name = name
+    self.catname = catname
     super(Part, self).__init__(name)
     self.setEditable(False)
     self.setData(('part', catname, name), Qt.UserRole)
+
+  def set_name(self, new):
+    self.setText(new)
+    self.setData(('part', self.catname, new), Qt.UserRole)
+    print 'part renamed to', new
+    self.name = new
+   
 
 class Category(QtGui.QStandardItem):
 
@@ -24,6 +32,15 @@ class Category(QtGui.QStandardItem):
 
   def add_part(self, name):
     self.appendRow(Part(self.name, name))
+
+  def rename_part(self, old, new):
+    print 'rename_part', old, new
+    rc = self.rowCount()
+    for i in range(0, rc):
+      part_item = self.child(i)
+      print part_item.name
+      if part_item.name == old:
+        part_item.set_name(new)
 
 class PartModel(QtGui.QStandardItemModel):
 
@@ -49,18 +66,25 @@ class PartModel(QtGui.QStandardItemModel):
     root.appendRow(Category(cat_name))
     self.sort(0)
 
-  def add_part(self, part):
+  def __find_cat_item(self, cat_name):
     root = self.invisibleRootItem()
     rc = root.rowCount()
     for i in range(0, rc):
       cat_item = root.child(i)
-      p = cat_item.data(Qt.UserRole)
-      print p
-      (c, name) = p
-      if name == part.cat.name:
-        cat_item.add_part(part.full_name)
-        cat_item.sort(0)
-        break
+      (c, name, _) =  cat_item.data(Qt.UserRole)
+      if name == cat_name:
+        return cat_item
+    return None
+
+  def add_part(self, part):
+    cat_item = self.__find_cat_item(part.cat.name)
+    cat_item.add_part(part.full_name)
+    cat_item.sort(0)
+
+  def rename_part(self, cat, old, new):
+    print 'rename', cat, old, new
+    cat_item = self.__find_cat_item(cat.name)
+    cat_item.rename_part(old, new)
 
 class PartTree(QtGui.QTreeView):
 
