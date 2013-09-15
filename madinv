@@ -8,8 +8,9 @@ import os, sys, signal, subprocess
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
-from gui.parts import PartModel, PartTree
+from gui.partstree import PartModel, PartTree
 from gui.dialogs import PreferencesDialog, AddCatDialog, AddPartDialog
+import gui.part
 
 from data.data import Data
 
@@ -38,58 +39,10 @@ class Right(QtGui.QScrollArea):
     self.setWidget(QtGui.QWidget())
 
   def set_category(self, cat):
-    vbox = QtGui.QVBoxLayout()
-    vbox.addWidget(QtGui.QLabel("Category: " + cat.name))
-    items = cat.prop.items()
-    if len(items) > 0:
-      table = QtGui.QTableWidget(len(items), 2)
-      table.setHorizontalHeaderLabels(['name','value'])
-      p = 0
-      for (k,v) in items:
-        table.setItem(p,0,QtGui.QTableWidgetItem(k))
-        table.setItem(p,1,QtGui.QTableWidgetItem(v))
-        p = p + 1
-      vbox.addWidget(table)
-    w = QtGui.QWidget()
-    w.setLayout(vbox)
-    self.setWidget(w)
+    self.setWidget(gui.part.Category(cat))
 
   def set_part(self, part):
-    vbox = QtGui.QVBoxLayout()
-    form_layout = QtGui.QFormLayout()
-    def add(k,v,ro=False):
-      x = QtGui.QLineEdit(v)
-      x.setReadOnly(ro)
-      form_layout.addRow(k, x)
-    add("Category", part.cat.name, ro=True)
-    add("Part", part.full_name, ro=True)
-    add("Name", part.name, ro=True)
-    add("Package", part.package, ro=True)
-    add("Location", part.location)
-    add('Footprint', part.footprint)
-    self.single_value = QtGui.QCheckBox()
-    self.single_value.setChecked(part.single_value)
-    self.single_value.stateChanged.connect(self.single_value_changed)
-    form_layout.addRow('Single-value', self.single_value)
-    if part.single_value:
-      add('Quantity', str(part.quantity))
-      add('Threshold', str(part.threshold))
-    vbox.addLayout(form_layout)
-    if not part.single_value:
-      valtable = QtGui.QTableWidget(1, 2)
-      valtable.setHorizontalHeaderLabels(['value','quantity', 'threshold'])
-      vbox.addWidget(valtable)
-    vbox.addWidget(QtGui.QLabel("Buy"))
-    buytable = QtGui.QTableWidget(1, 6)
-    buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
-    vbox.addWidget(buytable)
-    w = QtGui.QWidget()
-    w.setLayout(vbox)
-    self.setWidget(w)
-
-  def single_value_changed(self):
-    self.parent.part.single_value = self.single_value.isChecked()
-    self.set_part(self.parent.part)
+    self.setWidget(gui.part.Part(part))
 
 class MainWin(QtGui.QMainWindow):
 
