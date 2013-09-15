@@ -40,9 +40,11 @@ class Part(QtGui.QWidget):
       form_layout.addRow(k, x)
       return x
     add("Category", part.cat.name, ro=True)
-    add("Part", part.full_name, ro=True)
+    self.full_name = add("Part", part.full_name, ro=True)
     self.name = add("Name", part.name)
+    self.name.textChanged.connect(self.fn_changed)
     self.package = add("Package", part.package)
+    self.package.textChanged.connect(self.fn_changed)
     self.location = add("Location", part.location)
     self.footprint = add('Footprint', part.footprint)
     self.single_value = QtGui.QCheckBox()
@@ -77,9 +79,15 @@ class Part(QtGui.QWidget):
     else:
       self.valtable.show()
 
+  def fn_changed(self):
+    self.part.name = self.name.text()
+    self.part.package = self.package.text()
+    self.full_name.setText(self.part.make_full_name())
+
   def sync(self):
     print "TODO sync to data part"
     p = self.part
+    p.name = self.name.text()
     p.package = self.package.text()
     p.location = self.location.text()
     p.footprint = self.footprint.text()

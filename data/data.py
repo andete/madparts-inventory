@@ -7,7 +7,8 @@ import os, os.path
 import glob
 import ConfigParser
 
-class Config(ConfigParser.SafeConfigParser):
+# we don't want the interpolation feature
+class Config(ConfigParser.RawConfigParser):
   pass
 
 default_basedir = "example"
@@ -51,8 +52,8 @@ class Part:
     self.location = wd('', lambda: self.c.get('main','location'))
     self.footprint = wd('', lambda: self.c.get('main','footprint'))
     self.single_value = wd(True, lambda: self.c.getboolean('main','single-value'))
-    self.quantity = wd('', lambda: self.c.get('main','quantity', ''))
-    self.threshold = wd('', lambda: self.c.get('main','threshold', ''))
+    self.quantity = wd('', lambda: self.c.get('main','quantity'))
+    self.threshold = wd('', lambda: self.c.get('main','threshold'))
 
   def save(self):
     print 'saving', self.name
@@ -73,6 +74,9 @@ class Part:
     if package != "" and package != None:
       fn += '-' + package
     return fn
+
+  def make_full_name(self):
+    return Part.full_name(self.name, self.package)
 
 class Cat:
 
