@@ -34,13 +34,17 @@ class Part(QtGui.QWidget):
     part = self.part
     form_layout = QtGui.QFormLayout()
     self.form_layout = form_layout
-    add = self.__add
+    def add(k,v,ro=False):
+      x = QtGui.QLineEdit(v)
+      x.setReadOnly(ro)
+      form_layout.addRow(k, x)
+      return x
     add("Category", part.cat.name, ro=True)
     add("Part", part.full_name, ro=True)
     self.name = add("Name", part.name)
-    add("Package", part.package, ro=True)
-    add("Location", part.location)
-    add('Footprint', part.footprint)
+    self.package = add("Package", part.package)
+    self.location = add("Location", part.location)
+    self.footprint = add('Footprint', part.footprint)
     self.single_value = QtGui.QCheckBox()
     self.single_value.setChecked(part.single_value)
     self.single_value.stateChanged.connect(self.single_value_changed)
@@ -50,8 +54,8 @@ class Part(QtGui.QWidget):
     form_layout.addRow('Quantity', self.quantity)
     form_layout.addRow('Threshold', self.threshold)
     if not part.single_value:
-      self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.quantity)[0]).widget().hide()
-      self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.threshold)[0]).widget().hide()
+      self.quantity.setDisabled(True)
+      self.threshold.setDisabled(True)
     vbox.addLayout(form_layout)
     self.valtable = QtGui.QTableWidget(1, 3)
     self.valtable.setHorizontalHeaderLabels(['value','quantity', 'threshold'])
@@ -64,22 +68,23 @@ class Part(QtGui.QWidget):
     vbox.addWidget(buytable)
     self.setLayout(vbox)
 
-  def __add(self, k,v,ro=False):
-      x = QtGui.QLineEdit(v)
-      x.setReadOnly(ro)
-      self.form_layout.addRow(k, x)
-      return x
-
   def single_value_changed(self):
     self.part.single_value = self.single_value.isChecked()
+    self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.quantity)[0]).widget().setDisabled(not self.part.single_value)
+    self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.threshold)[0]).widget().setDisabled(not self.part.single_value)
     if self.part.single_value:
-      self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.quantity)[0]).widget().show()
-      self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.threshold)[0]).widget().show()
       self.valtable.hide()
     else:
-      self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.quantity)[0]).widget().hide()
-      self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.threshold)[0]).widget().hide()
       self.valtable.show()
 
   def sync(self):
     print "TODO sync to data part"
+    p = self.part
+    p.package = self.package.text()
+    p.location = self.location.text()
+    p.footprint = self.footprint.text()
+    p.single_value = self.single_value.isChecked()
+    p.quantity = self.quantity.text()
+    p.threshold = self.threshold.text()
+    # TODO more
+    p.save()
