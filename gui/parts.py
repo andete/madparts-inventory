@@ -54,7 +54,9 @@ class PartModel(QtGui.QStandardItemModel):
     rc = root.rowCount()
     for i in range(0, rc):
       cat_item = root.child(i)
-      (c, name) = cat_item.data(Qt.UserRole)
+      p = cat_item.data(Qt.UserRole)
+      print p
+      (c, name) = p
       if name == part.cat.name:
         cat_item.add_part(part.full_name)
         cat_item.sort(0)
