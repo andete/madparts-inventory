@@ -36,8 +36,8 @@ class Part(QtGui.QWidget):
     self.form_layout = form_layout
     add = self.__add
     add("Category", part.cat.name, ro=True)
-    #add("Part", part.full_name, ro=True)
-    add("Name", part.name, ro=True)
+    add("Part", part.full_name, ro=True)
+    self.name = add("Name", part.name)
     add("Package", part.package, ro=True)
     add("Location", part.location)
     add('Footprint', part.footprint)
@@ -80,3 +80,6 @@ class Part(QtGui.QWidget):
       self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.quantity)[0]).widget().hide()
       self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.threshold)[0]).widget().hide()
       self.valtable.show()
+
+  def sync(self):
+    print "TODO sync to data part"

@@ -34,15 +34,23 @@ class Right(QtGui.QScrollArea):
     super(Right, self).__init__(parent)
     self.setWidgetResizable(True)
     self.parent = parent
+    self.part = None
 
   def set_nothing(self):
     self.setWidget(QtGui.QWidget())
 
   def set_category(self, cat):
+    if self.part != None:
+      self.part.sync()
+      self.part = None
     self.setWidget(gui.part.Category(cat))
 
   def set_part(self, part):
-    self.setWidget(gui.part.Part(part))
+    if self.part != None:
+      self.part.sync()
+      self.part = None
+    self.part = gui.part.Part(part)
+    self.setWidget(self.part)
 
 class MainWin(QtGui.QMainWindow):
 
