@@ -59,15 +59,45 @@ class Part(QtGui.QWidget):
       self.quantity.setDisabled(True)
       self.threshold.setDisabled(True)
     vbox.addLayout(form_layout)
-    self.valtable = QtGui.QTableWidget(1, 3)
-    self.valtable.setHorizontalHeaderLabels(['value','quantity', 'threshold'])
+    self.valtable = QtGui.QTableWidget(0, 4)
+    self.valtable.setHorizontalHeaderLabels(['#', 'value','quantity', 'threshold'])
+    self.valtable.itemChanged.connect(self.valtable_item_changed)
+    self.valtable.verticalHeader().hide()
+    self.valtable.setSortingEnabled(True)
+    self.valtable.sortItems(0, Qt.AscendingOrder)
     vbox.addWidget(self.valtable)
     if part.single_value:
-       self.valtable.hide()
+     self.valtable.hide()
+    else:
+      i = 0
+      for (val, qua, thr) in part.vl:
+        self.valtable.insertRow(i)
+        self.valtable.setItem(i, 0, QtGui.QTableWidgetItem(str(i+1)))
+        self.valtable.setItem(i, 1, QtGui.QTableWidgetItem(val))
+        self.valtable.setItem(i, 2, QtGui.QTableWidgetItem(qua))
+        self.valtable.setItem(i, 3, QtGui.QTableWidgetItem(thr))
+        i += 1
+      self.valtable.insertRow(i)
+      self.valtable.setItem(i, 0, QtGui.QTableWidgetItem(str(i+1)))
     vbox.addWidget(QtGui.QLabel("Buy"))
-    buytable = QtGui.QTableWidget(1, 6)
-    buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
-    vbox.addWidget(buytable)
+    self.buytable = QtGui.QTableWidget(1, 6)
+    self.buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
+    self.buytable.setSortingEnabled(True)
+    self.buytable.sortItems(0, Qt.AscendingOrder)
+    i = 0
+    for (when, wher, idx, price, amount) in part.bl:
+      self.buytable.insertRow(i)
+      self.buytable.setItem(i, 0, QtGui.QTableWidgetItem(when))
+      self.buytable.setItem(i, 1, QtGui.QTableWidgetItem(wher))
+      self.buytable.setItem(i, 2, QtGui.QTableWidgetItem(idx))
+      self.buytable.setItem(i, 3, QtGui.QTableWidgetItem(price))
+      self.buytable.setItem(i, 4, QtGui.QTableWidgetItem(amount))
+      try:
+        total = float(price) * float(amount)
+      except ValueError:
+        total = 0
+      self.buytable.setItem(i, 5, QtGui.QTableWidgetItem(total))
+    vbox.addWidget(self.buytable)
     self.setLayout(vbox)
 
   def single_value_changed(self):
@@ -84,8 +114,15 @@ class Part(QtGui.QWidget):
     self.part.package = self.package.text()
     self.full_name.setText(self.part.make_full_name())
 
+  def valtable_item_changed(self, item):
+    # automatically expand the value table as it is filled in
+    cr = self.valtable.currentRow()
+    nr = self.valtable.rowCount()
+    if cr == nr - 1:
+      self.valtable.setRowCount(nr+1)
+      self.valtable.setItem(nr, 0, QtGui.QTableWidgetItem(str(nr+1)))
+
   def sync(self):
-    print "TODO sync to data part"
     p = self.part
     p.name = self.name.text()
     p.package = self.package.text()
@@ -94,5 +131,32 @@ class Part(QtGui.QWidget):
     p.single_value = self.single_value.isChecked()
     p.quantity = self.quantity.text()
     p.threshold = self.threshold.text()
-    # TODO more
+    vl = []
+    for i in range(0, self.valtable.rowCount()):
+       def getval(r, c):
+         x = self.valtable.item(r, c)
+         if x is None:
+           return ''
+         return x.text()
+       val = getval(i, 0)
+       qua = getval(i, 1)
+       thr = getval(i, 2)
+       if val != '' or qua != '' or thr != '':
+         vl.append((val, qua, thr))
+    p.vl = vl
+    bl = []
+    for i in range(0, self.buytable.rowCount()):
+       def getval(r, c):
+         x = self.buytable.item(r, c)
+         if x is None:
+           return ''
+         return x.text()
+       when = getval(i, 0)
+       wher = getval(i, 1)
+       idx = getval(i, 2)
+       price = getval(i, 3)
+       amount = getval(i, 4)
+       if wher != '':
+         bl.append((when, wher, idx, price, amount))
+    p.bl = bl
     return p.save()

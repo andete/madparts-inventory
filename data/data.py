@@ -30,6 +30,8 @@ class Part:
     self.fn = fn
     self.ffn = os.path.join(self.cat.dirname, self.fn)
     self.c = Config()
+    self.vl = []
+    self.bl = []
     if os.path.exists(self.ffn):
       self.__read_config()
 
@@ -37,6 +39,8 @@ class Part:
     self.name = name
     self.package = package
     self.c.add_section('main')
+    self.c.add_section('values')
+    self.c.add_section('buy')
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'package', self.package)
     self.full_name = Part.full_name(self.name, self.package)
@@ -56,6 +60,37 @@ class Part:
     self.single_value = wd(True, lambda: self.c.getboolean('main','single-value'))
     self.quantity = wd('', lambda: self.c.get('main','quantity'))
     self.threshold = wd('', lambda: self.c.get('main','threshold'))
+    if not self.c.has_section('values'):
+      self.c.add_section('values')
+    for (k,v) in self.c.items('values'):
+      print (k,v)
+      (n, w) = k.split('_')
+      n = int(n)
+      if w == 'value':
+        t = [v]
+      elif w == 'quantity':
+        t.append(v)
+      elif w == 'threshold':
+        t.append(v)
+        print t
+        self.vl.append((t[0],t[1],t[2]))
+    if not self.c.has_section('buy'):
+      self.c.add_section('buy')
+    for (k,v) in self.c.items('buy'):
+      print (k,v)
+      (n, w) = k.split('_')
+      n = int(n)
+      if w == 'when':
+        t = [v]
+      elif w == 'where':
+        t.append(v)
+      elif w == 'id':
+        t.append(v)
+      elif w == 'price':
+        t.append(v)
+      elif w == 'amount':
+        t.append(v)
+        self.bl.append((t[0],t[1],t[2],t[3],t[4]))
 
   def save(self):
     print 'saving', self.name
@@ -66,6 +101,20 @@ class Part:
     self.c.set('main', 'single-value', str(self.single_value))
     self.c.set('main', 'quantity', self.quantity)
     self.c.set('main', 'threshold', self.threshold)
+    self.c.remove_section('values')
+    self.c.add_section('values')
+    for i in range(0, len(self.vl)):
+      self.c.set('values', "%03d_value" % (i), self.vl[i][0])
+      self.c.set('values', "%03d_quantity" % (i), self.vl[i][1])
+      self.c.set('values', "%03d_threshold" % (i), self.vl[i][2])
+    self.c.remove_section('buy')
+    self.c.add_section('buy')
+    for i in range(0, len(self.bl)):
+      self.c.set('buy', "%03d_when" % (i), self.bl[i][0])
+      self.c.set('buy', "%03d_where" % (i), self.bl[i][1])
+      self.c.set('buy', "%03d_id" % (i), self.bl[i][2])
+      self.c.set('buy', "%03d_price" % (i), self.bl[i][3])
+      self.c.set('buy', "%03d_amount" % (i), self.bl[i][4])
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
     if self.full_name_bak != self.full_name:
