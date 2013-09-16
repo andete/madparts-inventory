@@ -25,6 +25,7 @@ class Left(QtGui.QWidget):
     hbox.addWidget(self.search_le)
     vbox.addLayout(hbox)
     self.part_tree = PartTree(part_model, parent)
+    part_model.set_selection_model(self.part_tree.selection_model)
     vbox.addWidget(self.part_tree)
     self.setLayout(vbox)
 
@@ -95,6 +96,7 @@ class MainWin(QtGui.QMainWindow):
 
     splitter = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
     self.left = Left(self.part_model, self)
+ 
     splitter.addWidget(self.left)
     self.right = Right(self)
     splitter.addWidget(self.right)
@@ -150,6 +152,7 @@ class MainWin(QtGui.QMainWindow):
     dialog = AddPartDialog(self, self.data, self.cat)
     if dialog.exec_() == QtGui.QDialog.Accepted:
       self.part_model.add_part(dialog.result)
+      self.part_selected(self.cat.name, dialog.result.full_name)
 
   def category_selected(self, name):
     self.part = None

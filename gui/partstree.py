@@ -31,8 +31,9 @@ class Category(QtGui.QStandardItem):
     self.setData(('category', name, None), Qt.UserRole)
 
   def add_part(self, name):
-    self.appendRow(Part(self.name, name))
-    # TODO select new row!
+    new_part = Part(self.name, name)
+    self.appendRow(new_part)
+    return new_part
 
   def rename_part(self, old, new):
     print 'rename_part', old, new
@@ -53,6 +54,9 @@ class PartModel(QtGui.QStandardItemModel):
     self.populate()
     self.sort(0)
 
+  def set_selection_model(self, selection_model):
+    self.selection_model = selection_model
+
   def populate(self):
     root = self.invisibleRootItem()
     for cat in self.mdata:
@@ -64,8 +68,10 @@ class PartModel(QtGui.QStandardItemModel):
 
   def add_cat(self, cat_name):
     root = self.invisibleRootItem()
-    root.appendRow(Category(cat_name))
+    new_cat = Category(cat_name)
+    root.appendRow(new_cat)
     self.sort(0)
+    self.selection_model.select(new_cat.index(), QtGui.QItemSelectionModel.ClearAndSelect)
 
   def __find_cat_item(self, cat_name):
     root = self.invisibleRootItem()
@@ -79,8 +85,10 @@ class PartModel(QtGui.QStandardItemModel):
 
   def add_part(self, part):
     cat_item = self.__find_cat_item(part.cat.name)
-    cat_item.add_part(part.full_name)
+    new_part = cat_item.add_part(part.full_name)
     cat_item.sortChildren(0, Qt.AscendingOrder)
+    self.selection_model.select(new_part.index(), QtGui.QItemSelectionModel.ClearAndSelect)
+ 
 
   def rename_part(self, cat, old, new):
     print 'rename', cat, old, new
