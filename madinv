@@ -85,6 +85,7 @@ class MainWin(QtGui.QMainWindow):
     
     groupMenu = menuBar.addMenu('&Part')
     self.add_action(groupMenu, '&Add', self.add_part)
+    self.add_action(groupMenu, '&Save', self.save)
 
     gitMenu = menuBar.addMenu('&Git')
     self.add_action(gitMenu, '&Push', self.git_push)
