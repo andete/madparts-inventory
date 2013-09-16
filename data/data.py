@@ -63,7 +63,7 @@ class Part:
     if not self.c.has_section('values'):
       self.c.add_section('values')
     for (k,v) in self.c.items('values'):
-      print (k,v)
+      #print (k,v)
       (n, w) = k.split('_')
       n = int(n)
       if w == 'value':
@@ -72,7 +72,7 @@ class Part:
         t.append(v)
       elif w == 'threshold':
         t.append(v)
-        print t
+        #print t
         self.vl.append((t[0],t[1],t[2]))
     if not self.c.has_section('buy'):
       self.c.add_section('buy')

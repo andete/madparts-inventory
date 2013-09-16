@@ -25,6 +25,11 @@ class Category(QtGui.QWidget):
       vbox.addWidget(table)
     self.setLayout(vbox)  
 
+class IntQTableWidgetItem(QtGui.QTableWidgetItem):
+
+  def __lt__(self, other):
+    return int(self.text()) < int(other.text())
+
 class Part(QtGui.QWidget):
 
   def __init__(self, part):
@@ -72,7 +77,7 @@ class Part(QtGui.QWidget):
       i = 0
       for (val, qua, thr) in part.vl:
         self.valtable.insertRow(i)
-        self.valtable.setItem(i, 0, QtGui.QTableWidgetItem(str(i+1)))
+        self.valtable.setItem(i, 0, IntQTableWidgetItem(str(i+1)))
         self.valtable.setItem(i, 1, QtGui.QTableWidgetItem(val))
         self.valtable.setItem(i, 2, QtGui.QTableWidgetItem(qua))
         self.valtable.setItem(i, 3, QtGui.QTableWidgetItem(thr))
@@ -116,11 +121,13 @@ class Part(QtGui.QWidget):
 
   def valtable_item_changed(self, item):
     # automatically expand the value table as it is filled in
+    # might need some more intelligence...
     cr = self.valtable.currentRow()
     nr = self.valtable.rowCount()
+    #print 'current row:', cr, 'row count:', nr
     if cr == nr - 1:
-      self.valtable.setRowCount(nr+1)
-      self.valtable.setItem(nr, 0, QtGui.QTableWidgetItem(str(nr+1)))
+      self.valtable.insertRow(nr)
+      self.valtable.setItem(nr, 0, IntQTableWidgetItem(str(nr+1)))
 
   def sync(self):
     p = self.part
@@ -138,9 +145,9 @@ class Part(QtGui.QWidget):
          if x is None:
            return ''
          return x.text()
-       val = getval(i, 0)
-       qua = getval(i, 1)
-       thr = getval(i, 2)
+       val = getval(i, 1)
+       qua = getval(i, 2)
+       thr = getval(i, 3)
        if val != '' or qua != '' or thr != '':
          vl.append((val, qua, thr))
     p.vl = vl
