@@ -27,6 +27,10 @@ class Category(QtGui.QWidget):
 
 class IntQTableWidgetItem(QtGui.QTableWidgetItem):
 
+  def __init__(self, s):
+    super(IntQTableWidgetItem, self).__init__(s)
+    self.setFlags(self.flags() & ~(Qt.ItemIsEditable))
+
   def __lt__(self, other):
     return int(self.text()) < int(other.text())
 
