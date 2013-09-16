@@ -56,6 +56,10 @@ class Right(QtGui.QScrollArea):
     self.setWidget(self.part)
     return res
 
+  def save(self):
+    if self.part != None:
+      self.part.sync()
+
 class MainWin(QtGui.QMainWindow):
 
   def __init__(self):
@@ -105,8 +109,7 @@ class MainWin(QtGui.QMainWindow):
     QtGui.qApp.quit()
 
   def save(self):
-    if self.part != None:
-      self.part.save()
+    self.right.save()
 
   def about(self):
     a = """
