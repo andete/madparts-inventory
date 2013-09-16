@@ -45,6 +45,11 @@ class Part:
     self.c.set('main', 'package', self.package)
     self.full_name = Part.full_name(self.name, self.package)
     self.full_name_bak = self.full_name
+    self.location = ''
+    self.footprint = ''
+    self.single_value = True
+    self.quantity = ''
+    self.threshold = ''
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
 
@@ -208,6 +213,7 @@ class Cat:
     fn = self.unique_fn(full_name)
     part = Part(self, fn)
     part.set_np(name, package)
+    self.parts.append(part)
     return part
 
 class Data:

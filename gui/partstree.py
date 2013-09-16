@@ -32,6 +32,7 @@ class Category(QtGui.QStandardItem):
 
   def add_part(self, name):
     self.appendRow(Part(self.name, name))
+    # TODO select new row!
 
   def rename_part(self, old, new):
     print 'rename_part', old, new
@@ -79,7 +80,7 @@ class PartModel(QtGui.QStandardItemModel):
   def add_part(self, part):
     cat_item = self.__find_cat_item(part.cat.name)
     cat_item.add_part(part.full_name)
-    cat_item.sort(0)
+    cat_item.sortChildren(0, Qt.AscendingOrder)
 
   def rename_part(self, cat, old, new):
     print 'rename', cat, old, new
