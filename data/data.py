@@ -32,6 +32,7 @@ class Part:
     self.c = Config()
     self.vl = []
     self.bl = []
+    self.tl = []
     if os.path.exists(self.ffn):
       self.__read_config()
 
@@ -41,6 +42,7 @@ class Part:
     self.c.add_section('main')
     self.c.add_section('values')
     self.c.add_section('buy')
+    self.c.add_section('tag')
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'package', self.package)
     self.full_name = Part.full_name(self.name, self.package)
@@ -96,6 +98,17 @@ class Part:
       elif w == 'amount':
         t.append(v)
         self.bl.append((t[0],t[1],t[2],t[3],t[4]))
+    if not self.c.has_section('tag'):
+      self.c.add_section('tag')
+    for (k,v) in self.c.items('tag'):
+      print (k,v)
+      (n, w) = k.split('_')
+      n = int(n)
+      if w == 'tag':
+        t = [v]
+      elif w == 'value':
+        t.append(v)
+        self.tl.append((t[0],t[1]))
 
   def save(self):
     print 'saving', self.name
@@ -120,6 +133,11 @@ class Part:
       self.c.set('buy', "%03d_id" % (i), self.bl[i][2])
       self.c.set('buy', "%03d_price" % (i), self.bl[i][3])
       self.c.set('buy', "%03d_amount" % (i), self.bl[i][4])
+    self.c.remove_section('tag')
+    self.c.add_section('tag')
+    for i in range(0, len(self.tl)):
+      self.c.set('tag', "%03d_tag" % (i), self.tl[i][0])
+      self.c.set('tag', "%03d_value" % (i), self.tl[i][1])
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
     if self.full_name_bak != self.full_name:

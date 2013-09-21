@@ -106,7 +106,20 @@ class Part(QtGui.QWidget):
       except ValueError:
         total = 0
       self.buytable.setItem(i, 5, QtGui.QTableWidgetItem(total))
+      i += 1
     vbox.addWidget(self.buytable)
+    self.tagtable = QtGui.QTableWidget(1, 2)
+    self.tagtable.setHorizontalHeaderLabels(['tag','value'])
+    #self.tagtable.setSortingEnabled(True)
+    #self.tagtable.sortItems(0, Qt.AscendingOrder)
+    self.tagtable.itemChanged.connect(self.tagtable_item_changed)
+    i = 0
+    for (tag, value) in part.tl:
+      self.tagtable.insertRow(i)
+      self.tagtable.setItem(i, 0, QtGui.QTableWidgetItem(tag))
+      self.tagtable.setItem(i, 1, QtGui.QTableWidgetItem(value))
+      i += 1
+    vbox.addWidget(self.tagtable)
     self.setLayout(vbox)
 
   def single_value_changed(self):
@@ -132,6 +145,12 @@ class Part(QtGui.QWidget):
     if cr == nr - 1:
       self.valtable.insertRow(nr)
       self.valtable.setItem(nr, 0, IntQTableWidgetItem(str(nr+1)))
+
+  def tagtable_item_changed(self, item):
+    cr = self.tagtable.currentRow()
+    nr = self.tagtable.rowCount()
+    if cr == nr - 1:
+      self.tagtable.insertRow(nr)
 
   def sync(self):
     p = self.part
@@ -170,4 +189,16 @@ class Part(QtGui.QWidget):
        if wher != '':
          bl.append((when, wher, idx, price, amount))
     p.bl = bl
+    tl = []
+    for i in range(0, self.tagtable.rowCount()):
+      def getval(r, c):
+        x = self.tagtable.item(r, c)
+        if x is None:
+          return ''
+        return x.text()
+      tag = getval(i, 0)
+      value = getval(i, 1)
+      if tag != '':
+        tl.append((tag, value))
+    p.tl = tl
     return p.save()
