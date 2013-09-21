@@ -115,3 +115,35 @@ class AddPartDialog(QtGui.QDialog):
       super(AddPartDialog, self).accept()
     except DataException as e:
       QtGui.QMessageBox.critical(self, "error", str(e))
+
+class ClonePartDialog(QtGui.QDialog):
+
+  def __init__(self, parent, data, part):
+    super(ClonePartDialog, self).__init__(parent)
+    self.to_clone_part = part
+    self.setWindowTitle('Clone Part')
+    self.resize(640,160)
+    vbox = QtGui.QVBoxLayout()
+    form_layout = QtGui.QFormLayout()
+    form_layout.addRow("Category: ", QtGui.QLabel(part.cat.name))
+    self.name_edit = QtGui.QLineEdit(part.name)
+    form_layout.addRow("Name: ", self.name_edit)
+    self.package_edit = QtGui.QLineEdit(part.package)
+    form_layout.addRow("Package: ", self.package_edit)
+    vbox.addLayout(form_layout)
+    buttons = QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel
+    button_box = QtGui.QDialogButtonBox(buttons, QtCore.Qt.Horizontal)
+    button_box.accepted.connect(self.accept)
+    button_box.rejected.connect(self.reject)
+    vbox.addWidget(button_box)
+    self.setLayout(vbox)
+
+  def accept(self):
+    name = self.name_edit.text().strip().replace(' ','_')
+    package = self.package_edit.text().strip().replace(' ','_')
+    self.result = None
+    try:
+      self.result = self.to_clone_part.cat.clone_part(self.to_clone_part, name, package)
+      super(ClonePartDialog, self).accept()
+    except DataException as e:
+      QtGui.QMessageBox.critical(self, "error", str(e))

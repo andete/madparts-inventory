@@ -9,7 +9,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
 from gui.partstree import PartModel, PartTree
-from gui.dialogs import PreferencesDialog, AddCatDialog, AddPartDialog
+from gui.dialogs import PreferencesDialog, AddCatDialog, AddPartDialog, ClonePartDialog
 import gui.part
 
 from data.data import Data
@@ -86,6 +86,7 @@ class MainWin(QtGui.QMainWindow):
     
     groupMenu = menuBar.addMenu('&Part')
     self.add_action(groupMenu, '&Add', self.add_part)
+    self.add_action(groupMenu, '&Clone', self.clone_part)
     self.add_action(groupMenu, '&Save', self.save)
 
     gitMenu = menuBar.addMenu('&Git')
@@ -150,6 +151,14 @@ class MainWin(QtGui.QMainWindow):
       QtGui.QMessageBox.critical(self, "error", "select a category")
       return
     dialog = AddPartDialog(self, self.data, self.cat)
+    if dialog.exec_() == QtGui.QDialog.Accepted:
+      self.part_model.add_part(dialog.result)
+      self.part_selected(self.cat.name, dialog.result.full_name)
+
+  def clone_part(self):
+    if self.part is None:
+      QtGui.QMessageBox.critical(self, "error", "select a part first")
+    dialog = ClonePartDialog(self, self.data, self.part)
     if dialog.exec_() == QtGui.QDialog.Accepted:
       self.part_model.add_part(dialog.result)
       self.part_selected(self.cat.name, dialog.result.full_name)

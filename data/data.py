@@ -3,7 +3,7 @@
 # (c) 2013 Joost Yervante Damad <joost@damad.be>
 # License: GPL
 
-import os, os.path
+import os, os.path, copy
 import glob
 import ConfigParser
 
@@ -35,6 +35,30 @@ class Part:
     self.tl = []
     if os.path.exists(self.ffn):
       self.__read_config()
+
+  def clone(self, name, package, fn):
+    new_part = Part(self.cat, fn)
+    new_part.name = name
+    new_part.package = package
+    new_part.full_name = Part.full_name(name, package)
+    new_part.full_name_bak = new_part.full_name
+    new_part.fn = fn
+    new_part.ffn = os.path.join(new_part.cat.dirname, fn)
+    new_part.vl = copy.deepcopy(self.vl)
+    new_part.bl = copy.deepcopy(self.bl)
+    new_part.tl = copy.deepcopy(self.tl)
+    new_part.location = copy.deepcopy(self.location)
+    new_part.footprint = copy.deepcopy(self.footprint)
+    new_part.single_value = copy.deepcopy(self.single_value)
+    new_part.quantity = copy.deepcopy(self.quantity)
+    new_part.threshold = copy.deepcopy(self.threshold)
+    new_part.c.add_section('main')
+    new_part.c.add_section('values')
+    new_part.c.add_section('buy')
+    new_part.c.add_section('tag')
+    new_part.c.set('main', 'name', name)
+    new_part.c.set('main', 'package', package)
+    return new_part
 
   def set_np(self, name, package):
     self.name = name
@@ -233,6 +257,15 @@ class Cat:
     part.set_np(name, package)
     self.parts.append(part)
     return part
+
+  def clone_part(self, to_clone_part, name, package):
+    if name == '':
+      raise DataException('name is not optional')
+    full_name = Part.full_name(name, package)
+    fn = self.unique_fn(full_name)
+    new_part = to_clone_part.clone(name, package, fn)
+    self.parts.append(new_part)
+    return new_part
 
 class Data:
 

@@ -119,6 +119,7 @@ class PartTree(QtGui.QTreeView):
     sep.setSeparator(True)
     self.addAction(sep)
     _add("&Add Part", parent.add_part)
+    _add("&Clone Part", parent.clone_part)
     self.expandAll()
 
   def row_changed(self, current, previous):
