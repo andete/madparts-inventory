@@ -184,7 +184,8 @@ class Part:
 
 class Cat:
 
-  def __init__(self, dirname, name=None):
+  def __init__(self, data, dirname, name=None):
+    self.data = data
     self.dirname = dirname
     self.file = os.path.join(self.dirname, 'cat.ini')
     self.c = Config()
@@ -276,7 +277,7 @@ class Data:
       raise DataException("basedir not a directory")
     g = self.dir + '/*.cat'
     for c in glob.glob(os.path.join(self.dir, '*.cat')):
-      self.cat.append(Cat(c))
+      self.cat.append(Cat(self, c))
     self.sort()
 
   def sort(self):
@@ -293,7 +294,7 @@ class Data:
 
   def new_category(self, name):
     ffn = os.path.join(self.dir, Cat.dirname_from_name(name))
-    c = Cat(ffn, name)
+    c = Cat(self, ffn, name)
     self.cat.append(c)
     self.sort()
 

@@ -48,7 +48,13 @@ class Part(QtGui.QWidget):
       x.setReadOnly(ro)
       form_layout.addRow(k, x)
       return x
-    add("Category", part.cat.name, ro=True)
+    self.category_combo = QtGui.QComboBox()
+    for catx in self.part.cat.data.cat:
+      self.category_combo.addItem(catx.name, catx.name)
+      if catx.name == self.part.cat.name:
+        self.category_combo.setCurrentIndex(self.category_combo.count()-1)
+    self.category_combo.currentIndexChanged.connect(self.category_changed)
+    self.form_layout.addRow('Category', self.category_combo)
     self.full_name = add("Part", part.full_name, ro=True)
     self.name = add("Name", part.name)
     self.name.textChanged.connect(self.fn_changed)
@@ -151,6 +157,10 @@ class Part(QtGui.QWidget):
     nr = self.tagtable.rowCount()
     if cr == nr - 1:
       self.tagtable.insertRow(nr)
+
+  def category_changed(self):
+    new_category = self.category_combo.currentText()
+    print "TODO move to", new_category
 
   def sync(self):
     p = self.part
