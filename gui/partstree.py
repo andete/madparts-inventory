@@ -44,12 +44,13 @@ class Category(QtGui.QStandardItem):
       if part_item.name == old:
         part_item.set_name(new)
 
-  def take_part_item(self, name):
+  def remove_part_item(self, name):
     rc = self.rowCount()
     for i in range(0, rc):
       part_item = self.child(i)
       if part_item.name == name:
-        return self.takeRow(i)[0]
+        self.removeRow(i)
+        return
 
 class PartModel(QtGui.QStandardItemModel):
 
@@ -103,7 +104,7 @@ class PartModel(QtGui.QStandardItemModel):
 
   def move_part(self, old_cat_name, part):
     old_cat_item = self.__find_cat_item(old_cat_name)
-    part_item = old_cat_item.take_part_item(part.full_name)
+    old_cat_item.remove_part_item(part.full_name)
     self.add_part(part)
 
 class PartTree(QtGui.QTreeView):

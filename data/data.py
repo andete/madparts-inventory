@@ -3,7 +3,7 @@
 # (c) 2013 Joost Yervante Damad <joost@damad.be>
 # License: GPL
 
-import os, os.path, copy
+import os, os.path, copy, shutil
 import glob
 import ConfigParser
 
@@ -27,7 +27,7 @@ class Part:
 
   def __init__(self, cat, fn):
     self.cat = cat
-    self.fn = fn
+    self.fn = os.path.basename(fn)
     self.ffn = os.path.join(self.cat.dirname, self.fn)
     self.c = Config()
     self.vl = []
@@ -277,7 +277,9 @@ class Data:
       raise DataException("basedir not a directory")
     g = self.dir + '/*.cat'
     for c in glob.glob(os.path.join(self.dir, '*.cat')):
-      self.cat.append(Cat(self, c))
+      ca = Cat(self, c)
+      print ca, ca.name
+      self.cat.append(ca)
     self.sort()
 
   def sort(self):
@@ -298,4 +300,22 @@ class Data:
     self.cat.append(c)
     self.sort()
 
-
+  def move_part(self, part, new_category_name):
+    print "moving to", new_category_name
+    old_ffn = part.ffn
+    print "old_ffn", old_ffn
+    new_cat = self.cat_by_name(new_category_name)
+    print new_cat, new_cat.name
+    new_cat.parts.append(part)
+    for x in new_cat.parts:
+      print x.full_name
+    print "old_cat: ", part.cat.name
+    part.cat.parts.remove(part)
+    print "new_cat dirname", new_cat.dirname
+    print "part.fn", part.fn
+    new_ffn = os.path.join(new_cat.dirname, part.fn)
+    print "new ffn", new_ffn
+    shutil.move(old_ffn, new_ffn)
+    part.cat = new_cat
+    part.ffn = new_ffn
+    print "moved: ", part.full_name

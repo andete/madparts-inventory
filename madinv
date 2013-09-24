@@ -30,33 +30,44 @@ class Left(QtGui.QWidget):
     vbox.addWidget(self.part_tree)
     self.setLayout(vbox)
 
-class Right(QtGui.QScrollArea):
+class Right(QtGui.QTabWidget):
 
   def __init__(self, parent):
     super(Right, self).__init__(parent)
-    self.setWidgetResizable(True)
+    #self.setWidgetResizable(True)
     self.parent = parent
     self.part = None
-
-  def set_nothing(self):
-    self.setWidget(QtGui.QWidget())
+    self.category = gui.part.Category()
+    self.addTab(self.category, "Category")
+    self.part = gui.part.Part()
+    self.addTab(self.part, "Part")
+    self.tabBar().setEnabled(False)
 
   def set_category(self, cat):
+    self.category.set(cat)
+    self.setCurrentIndex(0)
+    """
     res = None
     if self.part != None:
       res = self.part.sync()
       self.part = None
     self.setWidget(gui.part.Category(cat))
     return res
+    """
 
   def set_part(self, part):
+    self.part.set(part)
+    self.setCurrentIndex(1)
+    """
     res = None
     if self.part != None:
       res = self.part.sync()
       self.part = None
     self.part = gui.part.Part(part)
+    self.part.category_changed.connect(self.parent.part_category_changed)
     self.setWidget(self.part)
-    return res
+    return res 
+    """
 
   def save(self):
     if self.part != None:
@@ -105,6 +116,8 @@ class MainWin(QtGui.QMainWindow):
     self.setCentralWidget(splitter)
     # make right part twice as large
     splitter.setStretchFactor(1, 2)
+
+
     self.status("Ready.")
 
   def status(self, msg):
@@ -203,6 +216,22 @@ class MainWin(QtGui.QMainWindow):
       pass
     finally:
       os.chdir(stored_cwd)
+
+  def part_category_changed(self, new_category_name):
+    # first make sure we're no longer displaying anything on the right
+    part = self.part
+    self.right.set_nothing()
+    old_category_name = part.cat.name
+    # first move the part in the data model
+    self.data.move_part(part, new_category_name)
+    print "X1"
+    # then move the part in the GUI model
+    self.part_model.move_part(old_category_name, part)
+    print "X2"
+    self.cat = self.data.cat_by_name(new_category_name)
+    self.part = self.cat.part_by_fullname(part.full_name)
+    res = self.right.set_part(self.part)
+    print "X3"
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")

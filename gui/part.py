@@ -8,22 +8,33 @@ from PySide.QtCore import Qt
 
 class Category(QtGui.QWidget):
 
-  def __init__(self, cat):
+  def __init__(self):
     super(Category, self).__init__()
-    self.cat = cat
+    self.name = ""
+    self.cat = None
     vbox = QtGui.QVBoxLayout()
-    vbox.addWidget(QtGui.QLabel("Category: " + cat.name))
+    self.name_label = QtGui.QLabel("Category: ")
+    vbox.addWidget(self.name_label)
+    #items = cat.prop.items()
+    self.prop_table = QtGui.QTableWidget(0, 2)
+    self.prop_table.setHorizontalHeaderLabels(['name','value'])
+    vbox.addWidget(self.prop_table)
+    self.setLayout(vbox)  
+
+  def set(self, cat):
+    self.cat = cat
+    self.name = cat.name
+    self.name_label.setText("Category: " + self.name)
     items = cat.prop.items()
+    self.prop_table.clear()
+    self.prop_table.setHorizontalHeaderLabels(['name','value'])
+    self.prop_table.setRowCount(len(items))
     if len(items) > 0:
-      table = QtGui.QTableWidget(len(items), 2)
-      table.setHorizontalHeaderLabels(['name','value'])
       p = 0
       for (k,v) in items:
-        table.setItem(p,0,QtGui.QTableWidgetItem(k))
-        table.setItem(p,1,QtGui.QTableWidgetItem(v))
+        self.prop_table.setItem(p,0,QtGui.QTableWidgetItem(k))
+        self.prop_table.setItem(p,1,QtGui.QTableWidgetItem(v))
         p = p + 1
-      vbox.addWidget(table)
-    self.setLayout(vbox)  
 
 class IntQTableWidgetItem(QtGui.QTableWidgetItem):
 
@@ -36,72 +47,104 @@ class IntQTableWidgetItem(QtGui.QTableWidgetItem):
 
 class Part(QtGui.QWidget):
 
-  def __init__(self, part):
+  category_changed = QtCore.Signal(str)  
+
+  def __init__(self):
     super(Part, self).__init__()
-    self.part = part
+    self.part = None
     vbox = QtGui.QVBoxLayout()
-    part = self.part
     form_layout = QtGui.QFormLayout()
     self.form_layout = form_layout
+    self.category_combo = QtGui.QComboBox()
+    self.category_combo.setEditable(False)
+    self.form_layout.addRow('Category', self.category_combo)
     def add(k,v,ro=False):
       x = QtGui.QLineEdit(v)
       x.setReadOnly(ro)
       form_layout.addRow(k, x)
       return x
-    self.category_combo = QtGui.QComboBox()
-    for catx in self.part.cat.data.cat:
-      self.category_combo.addItem(catx.name, catx.name)
-      if catx.name == self.part.cat.name:
-        self.category_combo.setCurrentIndex(self.category_combo.count()-1)
-    self.category_combo.currentIndexChanged.connect(self.category_changed)
-    self.form_layout.addRow('Category', self.category_combo)
-    self.full_name = add("Part", part.full_name, ro=True)
-    self.name = add("Name", part.name)
+    self.full_name = add("Part", "", ro=True)
+    self.name = add("Name", "")
     self.name.textChanged.connect(self.fn_changed)
-    self.package = add("Package", part.package)
+    self.package = add("Package", "")
     self.package.textChanged.connect(self.fn_changed)
-    self.location = add("Location", part.location)
-    self.footprint = add('Footprint', part.footprint)
+    self.location = add("Location", "")
+    self.footprint = add('Footprint', "")
     self.single_value = QtGui.QCheckBox()
-    self.single_value.setChecked(part.single_value)
+    self.single_value.setChecked(False)
     self.single_value.stateChanged.connect(self.single_value_changed)
     form_layout.addRow('Single-value', self.single_value)
-    self.quantity = QtGui.QLineEdit(str(part.quantity))
-    self.threshold = QtGui.QLineEdit(str(part.threshold))
+    self.quantity = QtGui.QLineEdit("")
+    self.threshold = QtGui.QLineEdit("")
     form_layout.addRow('Quantity', self.quantity)
     form_layout.addRow('Threshold', self.threshold)
-    if not part.single_value:
-      self.quantity.setDisabled(True)
-      self.threshold.setDisabled(True)
     vbox.addLayout(form_layout)
     self.valtable = QtGui.QTableWidget(0, 4)
     self.valtable.setHorizontalHeaderLabels(['#', 'value','quantity', 'threshold'])
     self.valtable.itemChanged.connect(self.valtable_item_changed)
+    vbox.addWidget(self.valtable)
+    vbox.addWidget(QtGui.QLabel("Buy"))
+    self.buytable = QtGui.QTableWidget(0, 6)
+    self.buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
+    self.buytable.setSortingEnabled(True)
+    self.buytable.sortItems(0, Qt.AscendingOrder)
+    vbox.addWidget(self.buytable)
+    self.tagtable = QtGui.QTableWidget(0, 2)
+    self.tagtable.setHorizontalHeaderLabels(['tag','value'])
+    #self.tagtable.setSortingEnabled(True)
+    #self.tagtable.sortItems(0, Qt.AscendingOrder)
+    self.tagtable.itemChanged.connect(self.tagtable_item_changed)
+    vbox.addWidget(self.tagtable)
+    self.setLayout(vbox)
+
+  def set(self, part):
+    try:
+      self.category_combo.currentIndexChanged.disconnect()
+    except RuntimeError: # ignore if not already connected
+      pass
+    self.part = part
+    cats = [catx.name for catx in self.part.cat.data.cat]
+    cats.sort()
+    self.category_combo.clear()
+    for cat_name in cats:
+      self.category_combo.addItem(cat_name, cat_name)
+      if cat_name == self.part.cat.name:
+        self.category_combo.setCurrentIndex(self.category_combo.count()-1)
+    self.full_name.setText(part.full_name)
+    self.name.setText(part.name)
+    self.package.setText(part.package)
+    self.location.setText(part.location)
+    self.footprint.setText(part.footprint)
+    self.single_value.setChecked(part.single_value)
+    self.quantity.setText(part.quantity)
+    self.threshold.setText(part.threshold)
+    if not part.single_value:
+      self.quantity.setDisabled(True)
+      self.threshold.setDisabled(True)
+    self.valtable.clear()
+    self.valtable.setHorizontalHeaderLabels(['#', 'value','quantity', 'threshold'])
     self.valtable.verticalHeader().hide()
     self.valtable.setSortingEnabled(True)
     self.valtable.sortItems(0, Qt.AscendingOrder)
-    vbox.addWidget(self.valtable)
     if part.single_value:
-     self.valtable.hide()
+      self.valtable.hide()
     else:
+      self.valtable.setRowCount(len(part.vl)+1)
       i = 0
       for (val, qua, thr) in part.vl:
-        self.valtable.insertRow(i)
         self.valtable.setItem(i, 0, IntQTableWidgetItem(str(i+1)))
         self.valtable.setItem(i, 1, QtGui.QTableWidgetItem(val))
         self.valtable.setItem(i, 2, QtGui.QTableWidgetItem(qua))
         self.valtable.setItem(i, 3, QtGui.QTableWidgetItem(thr))
         i += 1
-      self.valtable.insertRow(i)
       self.valtable.setItem(i, 0, QtGui.QTableWidgetItem(str(i+1)))
-    vbox.addWidget(QtGui.QLabel("Buy"))
-    self.buytable = QtGui.QTableWidget(1, 6)
+    self.buytable.clear()
     self.buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     self.buytable.setSortingEnabled(True)
     self.buytable.sortItems(0, Qt.AscendingOrder)
+    self.valtable.setRowCount(len(part.bl))
     i = 0
     for (when, wher, idx, price, amount) in part.bl:
-      self.buytable.insertRow(i)
       self.buytable.setItem(i, 0, QtGui.QTableWidgetItem(when))
       self.buytable.setItem(i, 1, QtGui.QTableWidgetItem(wher))
       self.buytable.setItem(i, 2, QtGui.QTableWidgetItem(idx))
@@ -113,20 +156,17 @@ class Part(QtGui.QWidget):
         total = 0
       self.buytable.setItem(i, 5, QtGui.QTableWidgetItem(total))
       i += 1
-    vbox.addWidget(self.buytable)
-    self.tagtable = QtGui.QTableWidget(1, 2)
     self.tagtable.setHorizontalHeaderLabels(['tag','value'])
     #self.tagtable.setSortingEnabled(True)
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
-    self.tagtable.itemChanged.connect(self.tagtable_item_changed)
+    self.tagtable.clear()
+    self.tagtable.setRowCount(len(part.tl))
     i = 0
     for (tag, value) in part.tl:
-      self.tagtable.insertRow(i)
       self.tagtable.setItem(i, 0, QtGui.QTableWidgetItem(tag))
       self.tagtable.setItem(i, 1, QtGui.QTableWidgetItem(value))
       i += 1
-    vbox.addWidget(self.tagtable)
-    self.setLayout(vbox)
+    self.category_combo.currentIndexChanged.connect(self.category_combo_changed)
 
   def single_value_changed(self):
     self.part.single_value = self.single_value.isChecked()
@@ -158,9 +198,18 @@ class Part(QtGui.QWidget):
     if cr == nr - 1:
       self.tagtable.insertRow(nr)
 
-  def category_changed(self):
-    new_category = self.category_combo.currentText()
-    print "TODO move to", new_category
+  def category_combo_changed(self):
+    new_category_name = str(self.category_combo.currentText())
+    print "category_combo_changed:", new_category_name, self.part.name
+    if new_category_name == self.part.cat.name:
+      return
+    if new_category_name == "":
+      return
+    # make sure file is synced to disk first
+    self.sync()
+    #self.category_combo.currentIndexChanged.disconnect()
+    # signal will be caught by mainwin
+    self.category_changed.emit(new_category_name)
 
   def sync(self):
     p = self.part
