@@ -40,9 +40,10 @@ class Category(QtGui.QStandardItem):
     rc = self.rowCount()
     for i in range(0, rc):
       part_item = self.child(i)
-      print part_item.name
+      #print part_item.name
       if part_item.name == old:
         part_item.set_name(new)
+        return
 
   def remove_part_item(self, name):
     rc = self.rowCount()

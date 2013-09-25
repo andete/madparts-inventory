@@ -84,6 +84,7 @@ class Part:
       raise DataException('file not found ' + self.ffn)
     self.name = self.c.get('main', 'name')
     self.package = self.c.get('main', 'package')
+    print "read package:", self.name, self.package
     self.full_name = Part.full_name(self.name, self.package)
     self.full_name_bak = self.full_name
     self.location = wd('', lambda: self.c.get('main','location'))
@@ -108,7 +109,7 @@ class Part:
     if not self.c.has_section('buy'):
       self.c.add_section('buy')
     for (k,v) in self.c.items('buy'):
-      print (k,v)
+      #print (k,v)
       (n, w) = k.split('_')
       n = int(n)
       if w == 'when':
@@ -125,7 +126,7 @@ class Part:
     if not self.c.has_section('tag'):
       self.c.add_section('tag')
     for (k,v) in self.c.items('tag'):
-      print (k,v)
+      #print (k,v)
       (n, w) = k.split('_')
       n = int(n)
       if w == 'tag':
@@ -225,7 +226,7 @@ class Cat:
     try:
       return next((x for x in self.parts if x.full_name == full_name))
     except StopIteration:
-      raise DataException("part not found " + full_name)
+      raise DataException("part not found in " + self.name + ":" + full_name)
 
   @staticmethod
   def dirname_from_name(name):
@@ -278,7 +279,7 @@ class Data:
     g = self.dir + '/*.cat'
     for c in glob.glob(os.path.join(self.dir, '*.cat')):
       ca = Cat(self, c)
-      print ca, ca.name
+      #print ca, ca.name
       self.cat.append(ca)
     self.sort()
 

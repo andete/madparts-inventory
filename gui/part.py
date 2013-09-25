@@ -51,12 +51,14 @@ class Part(QtGui.QWidget):
 
   def __init__(self):
     super(Part, self).__init__()
+    self.in_setup = True
     self.part = None
     vbox = QtGui.QVBoxLayout()
     form_layout = QtGui.QFormLayout()
     self.form_layout = form_layout
     self.category_combo = QtGui.QComboBox()
     self.category_combo.setEditable(False)
+    self.category_combo.currentIndexChanged.connect(self.category_combo_changed)
     self.form_layout.addRow('Category', self.category_combo)
     def add(k,v,ro=False):
       x = QtGui.QLineEdit(v)
@@ -98,10 +100,11 @@ class Part(QtGui.QWidget):
     self.setLayout(vbox)
 
   def set(self, part):
-    try:
-      self.category_combo.currentIndexChanged.disconnect()
-    except RuntimeError: # ignore if not already connected
-      pass
+    if part == None:
+      self.part = None
+      return
+    self.in_setup = True
+    print "set part:", part.full_name
     self.part = part
     cats = [catx.name for catx in self.part.cat.data.cat]
     cats.sort()
@@ -112,6 +115,7 @@ class Part(QtGui.QWidget):
         self.category_combo.setCurrentIndex(self.category_combo.count()-1)
     self.full_name.setText(part.full_name)
     self.name.setText(part.name)
+    print "part package:", part.package
     self.package.setText(part.package)
     self.location.setText(part.location)
     self.footprint.setText(part.footprint)
@@ -166,9 +170,11 @@ class Part(QtGui.QWidget):
       self.tagtable.setItem(i, 0, QtGui.QTableWidgetItem(tag))
       self.tagtable.setItem(i, 1, QtGui.QTableWidgetItem(value))
       i += 1
-    self.category_combo.currentIndexChanged.connect(self.category_combo_changed)
+    self.in_setup = False
 
   def single_value_changed(self):
+    if self.in_setup:
+      return
     self.part.single_value = self.single_value.isChecked()
     self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.quantity)[0]).widget().setDisabled(not self.part.single_value)
     self.form_layout.itemAt(self.form_layout.getWidgetPosition(self.threshold)[0]).widget().setDisabled(not self.part.single_value)
@@ -178,11 +184,16 @@ class Part(QtGui.QWidget):
       self.valtable.show()
 
   def fn_changed(self):
+    if self.in_setup:
+      return
     self.part.name = self.name.text()
     self.part.package = self.package.text()
-    self.full_name.setText(self.part.make_full_name())
+    self.part.full_name = self.part.make_full_name()
+    self.full_name.setText(self.part.full_name)
 
   def valtable_item_changed(self, item):
+    if self.in_setup:
+      return
     # automatically expand the value table as it is filled in
     # might need some more intelligence...
     cr = self.valtable.currentRow()
@@ -193,12 +204,16 @@ class Part(QtGui.QWidget):
       self.valtable.setItem(nr, 0, IntQTableWidgetItem(str(nr+1)))
 
   def tagtable_item_changed(self, item):
+    if self.in_setup:
+      return
     cr = self.tagtable.currentRow()
     nr = self.tagtable.rowCount()
     if cr == nr - 1:
       self.tagtable.insertRow(nr)
 
   def category_combo_changed(self):
+    if self.in_setup:
+      return
     new_category_name = str(self.category_combo.currentText())
     print "category_combo_changed:", new_category_name, self.part.name
     if new_category_name == self.part.cat.name:
@@ -212,6 +227,10 @@ class Part(QtGui.QWidget):
     self.category_changed.emit(new_category_name)
 
   def sync(self):
+    print "sync"
+    if self.part == None:
+      return None
+    print "sync2"
     p = self.part
     p.name = self.name.text()
     p.package = self.package.text()

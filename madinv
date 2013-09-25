@@ -36,42 +36,27 @@ class Right(QtGui.QTabWidget):
     super(Right, self).__init__(parent)
     #self.setWidgetResizable(True)
     self.parent = parent
-    self.part = None
-    self.category = gui.part.Category()
-    self.addTab(self.category, "Category")
-    self.part = gui.part.Part()
-    self.addTab(self.part, "Part")
+    self.gui_category = gui.part.Category()
+    self.addTab(self.gui_category, "Category")
+    self.gui_part = gui.part.Part()
+    self.addTab(self.gui_part, "Part")
     self.tabBar().setEnabled(False)
 
   def set_category(self, cat):
-    self.category.set(cat)
+    part_name_changed = self.gui_part.sync()
+    self.gui_part.set(None)
+    self.gui_category.set(cat)
     self.setCurrentIndex(0)
-    """
-    res = None
-    if self.part != None:
-      res = self.part.sync()
-      self.part = None
-    self.setWidget(gui.part.Category(cat))
-    return res
-    """
+    return part_name_changed
 
   def set_part(self, part):
-    self.part.set(part)
+    part_name_changed = self.gui_part.sync()
+    self.gui_part.set(part)
     self.setCurrentIndex(1)
-    """
-    res = None
-    if self.part != None:
-      res = self.part.sync()
-      self.part = None
-    self.part = gui.part.Part(part)
-    self.part.category_changed.connect(self.parent.part_category_changed)
-    self.setWidget(self.part)
-    return res 
-    """
+    return part_name_changed
 
   def save(self):
-    if self.part != None:
-      self.part.sync()
+    return self.gui_part.sync()
 
 class MainWin(QtGui.QMainWindow):
 
@@ -127,7 +112,9 @@ class MainWin(QtGui.QMainWindow):
     QtGui.qApp.quit()
 
   def save(self):
-    self.right.save()
+    p_name_ch = self.right.save()
+    if p_name_ch != None:
+      self.part_model.rename_part(self.cat, p_name_ch[0], p_name_ch[1])
 
   def about(self):
     a = """
@@ -181,18 +168,18 @@ class MainWin(QtGui.QMainWindow):
     self.part = None
     old_cat = self.cat
     self.cat = self.data.cat_by_name(name)
-    print name, self.cat.prop
-    res = self.right.set_category(self.cat)
-    if res != None:
-      self.part_model.rename_part(old_cat, res[0], res[1])
+    #print name, self.cat.prop
+    p_name_ch = self.right.set_category(self.cat)
+    if p_name_ch != None:
+      self.part_model.rename_part(old_cat, p_name_ch[0], p_name_ch[1])
      
   def part_selected(self, cat_name, full_name):
     old_cat = self.cat
     self.cat = self.data.cat_by_name(cat_name)
     self.part = self.cat.part_by_fullname(full_name)
-    res = self.right.set_part(self.part)
-    if res != None:
-      self.part_model.rename_part(old_cat, res[0], res[1])
+    p_name_ch = self.right.set_part(self.part)
+    if p_name_ch != None:
+      self.part_model.rename_part(old_cat, p_name_ch[0], p_name_ch[1])
 
   def git_push(self):
     stored_cwd = os.getcwd()
@@ -220,18 +207,14 @@ class MainWin(QtGui.QMainWindow):
   def part_category_changed(self, new_category_name):
     # first make sure we're no longer displaying anything on the right
     part = self.part
-    self.right.set_nothing()
     old_category_name = part.cat.name
     # first move the part in the data model
     self.data.move_part(part, new_category_name)
-    print "X1"
     # then move the part in the GUI model
     self.part_model.move_part(old_category_name, part)
-    print "X2"
     self.cat = self.data.cat_by_name(new_category_name)
-    self.part = self.cat.part_by_fullname(part.full_name)
-    res = self.right.set_part(self.part)
-    print "X3"
+    # part actually stays the same!
+    # self.part = self.cat.part_by_fullname(part.full_name)
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")
