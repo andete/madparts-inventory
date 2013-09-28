@@ -69,24 +69,29 @@ class Category(QtGui.QStandardItem):
     self.appendRow(item)
 
   def filter(self, txt):
+    count = 0
     rc = self.rowCount()
     to_remove_ind = []
-    to_hide_parts = []
     for i in range(0, rc):
       part_item = self.child(i)
       model_index = part_item.index()
       persistant = QtCore.QPersistentModelIndex(model_index)
       if not txt in part_item.name:
          to_remove_ind.append(persistant)
+      else:
+         count += 1
+    to_hide_parts = []
     for i in to_remove_ind:
       item = self.takeRow(i.row())[0]
       to_hide_parts.append(item)
     for i in self.hidden_parts:
       if txt in i.name:
         self.appendRow(i)
+        count += 1
       else:
         to_hide_parts.append(i)
     self.hidden_parts = to_hide_parts
+    return count
 
 class PartModel(QtGui.QStandardItemModel):
 
@@ -98,6 +103,7 @@ class PartModel(QtGui.QStandardItemModel):
     self.populate()
     self.sort(0)
     self.being_changed = False
+    self.hidden_cats = []
 
   def set_selection_model(self, selection_model):
     self.selection_model = selection_model
@@ -155,13 +161,24 @@ class PartModel(QtGui.QStandardItemModel):
       self.being_changed = True
       root = self.invisibleRootItem()
       rc = root.rowCount()
+      to_remove_ind = []
       for i in range(0, rc):
         cat_item = root.child(i)
         if cat_item.filter(txt) == 0:
-          # TODO, also remove cat
-          pass
+          to_remove_ind.append(QtCore.QPersistentModelIndex(cat_item.index()))
+        to_hide_cats = []
+        for i in to_remove_ind:
+          item = self.takeRow(i.row())[0]
+          to_hide_cats.append(item)
+        for i in self.hidden_cats:
+          if i.filter(txt) > 0:
+            self.appendRow(i)
+          else:
+            to_hide_cats.append(i)
+        self.hidden_cats = to_hide_cats
     finally:
       self.sort(0)
+      self.tree.expandAll()
       self.being_changed = False
 
 class PartTree(QtGui.QTreeView):
@@ -171,6 +188,7 @@ class PartTree(QtGui.QTreeView):
     self.parent = parent
     self.setModel(model)
     self.my_model = model
+    self.my_model.tree = self
     self.selection_model = QtGui.QItemSelectionModel(model, self)
     self.selection_model.currentRowChanged.connect(self.row_changed)
     self.setSelectionModel(self.selection_model)
