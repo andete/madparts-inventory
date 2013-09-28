@@ -25,6 +25,9 @@ class Part(QtGui.QStandardItem):
     self.catname = new_cat_name
     self.setData(('part', new_cat_name, self.name), Qt.UserRole)
 
+  def match(self, txt):
+    return txt in self.name
+
 class Category(QtGui.QStandardItem):
 
   def __init__(self, part_model, name):
@@ -76,7 +79,7 @@ class Category(QtGui.QStandardItem):
       part_item = self.child(i)
       model_index = part_item.index()
       persistant = QtCore.QPersistentModelIndex(model_index)
-      if not txt in part_item.name:
+      if not part_item.match(txt):
          to_remove_ind.append(persistant)
       else:
          count += 1
@@ -85,7 +88,7 @@ class Category(QtGui.QStandardItem):
       item = self.takeRow(i.row())[0]
       to_hide_parts.append(item)
     for i in self.hidden_parts:
-      if txt in i.name:
+      if i.match(txt):
         self.appendRow(i)
         count += 1
       else:
