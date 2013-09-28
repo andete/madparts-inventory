@@ -166,16 +166,16 @@ class PartModel(QtGui.QStandardItemModel):
         cat_item = root.child(i)
         if cat_item.filter(txt) == 0:
           to_remove_ind.append(QtCore.QPersistentModelIndex(cat_item.index()))
-        to_hide_cats = []
-        for i in to_remove_ind:
-          item = self.takeRow(i.row())[0]
-          to_hide_cats.append(item)
-        for i in self.hidden_cats:
-          if i.filter(txt) > 0:
-            self.appendRow(i)
-          else:
-            to_hide_cats.append(i)
-        self.hidden_cats = to_hide_cats
+      to_hide_cats = []
+      for i in to_remove_ind:
+        item = self.takeRow(i.row())[0]
+        to_hide_cats.append(item)
+      for i in self.hidden_cats:
+        if i.filter(txt) > 0:
+          self.appendRow(i)
+        else:
+          to_hide_cats.append(i)
+      self.hidden_cats = to_hide_cats
     finally:
       self.sort(0)
       self.tree.expandAll()
