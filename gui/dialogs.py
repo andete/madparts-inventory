@@ -75,9 +75,9 @@ class AddCatDialog(QtGui.QDialog):
     self.setLayout(vbox)
 
   def accept(self):
-    self.result = self.name_edit.text()
+    name = self.name_edit.text()
     try:
-      self.data.new_category(self.result)
+      self.result = self.data.new_category(name)
       super(AddCatDialog, self).accept()
     except DataException as e:
       QtGui.QMessageBox.critical(self, "error", str(e))

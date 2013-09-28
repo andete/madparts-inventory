@@ -303,6 +303,7 @@ class Data:
     c = Cat(self, ffn, name)
     self.cat.append(c)
     self.sort()
+    return c
 
   def move_part(self, part, new_category_name):
     print "moving to", new_category_name

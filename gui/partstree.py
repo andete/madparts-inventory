@@ -33,8 +33,9 @@ class Part(QtGui.QStandardItem):
 
 class Category(QtGui.QStandardItem):
 
-  def __init__(self, part_model, name):
-    self.name = name
+  def __init__(self, part_model, cat):
+    self.cat = cat
+    name = self.cat.name
     self.part_model = part_model
     super(Category, self).__init__(name)
     self.setEditable(False)
@@ -42,7 +43,7 @@ class Category(QtGui.QStandardItem):
     self.hidden_parts = []
 
   def add_part(self, name):
-    new_part = Part(self.name, name)
+    new_part = Part(self.cat.name, name)
     self.appendRow(new_part)
     return new_part
 
@@ -117,15 +118,14 @@ class PartModel(QtGui.QStandardItemModel):
   def populate(self):
     root = self.invisibleRootItem()
     for cat in self.mdata:
-      print cat.name
-      cat_item = Category(self, cat.name)
+      cat_item = Category(self, cat)
       for part in cat:
         cat_item.add_part(part.full_name)
       root.appendRow(cat_item)
 
-  def add_cat(self, cat_name):
+  def add_cat(self, cat):
     root = self.invisibleRootItem()
-    new_cat = Category(self, cat_name)
+    new_cat = Category(self, cat)
     root.appendRow(new_cat)
     self.sort(0)
     self.selection_model.select(new_cat.index(), QtGui.QItemSelectionModel.ClearAndSelect)
@@ -135,8 +135,7 @@ class PartModel(QtGui.QStandardItemModel):
     rc = root.rowCount()
     for i in range(0, rc):
       cat_item = root.child(i)
-      (c, name, _) =  cat_item.data(Qt.UserRole)
-      if name == cat_name:
+      if name == cat_item.cat.name:
         return cat_item
     return None
 
@@ -221,7 +220,7 @@ class PartTree(QtGui.QTreeView):
       return
     (t,cn, n) = current.data(QtCore.Qt.UserRole)
     if t == 'category':
-      self.parent.category_selected(cn)
+      self.mainwin.category_selected(cn)
     else:
-      self.parent.part_selected(cn, n)
+      self.mainwin.part_selected(cn, n)
     
