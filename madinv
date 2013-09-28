@@ -33,7 +33,7 @@ class Left(QtGui.QWidget):
     self.setLayout(vbox)
 
   def search_changed(self, txt):
-    self.parent.part_model.filter(txt)
+    self.parent.part_model.filter(txt.lower())
 
 class Right(QtGui.QTabWidget):
 

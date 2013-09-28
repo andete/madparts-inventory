@@ -33,8 +33,10 @@ class Part:
     self.vl = []
     self.bl = []
     self.tl = []
+    self.tags = []
     if os.path.exists(self.ffn):
       self.__read_config()
+    self.__set_tags()
 
   def clone(self, name, package, fn):
     new_part = Part(self.cat, fn)
@@ -78,6 +80,7 @@ class Part:
     self.threshold = ''
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
+    self.__set_tags()
 
   def __read_config(self):
     if self.c.read(self.ffn) == []:
@@ -165,6 +168,7 @@ class Part:
       self.c.set('tag', "%03d_value" % (i), self.tl[i][1])
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
+    self.__set_tags()
     if self.full_name_bak != self.full_name:
      res = (self.full_name_bak, self.full_name)
      self.full_name_bak = self.full_name
@@ -184,7 +188,19 @@ class Part:
     return Part.full_name(self.name, self.package)
 
   def match(self, txt):
-    return txt in self.full_name
+    for x in self.tags:
+      if txt in x:
+        return True
+    return False
+
+  def __set_tags(self):
+    self.tags = []
+    self.tags.append(self.full_name.lower())
+    for (k,v) in self.tl:
+      if k != "":
+        self.tags.append(k.lower())
+      if v != "":
+        self.tags.append(v.lower())
 
 class Cat:
 

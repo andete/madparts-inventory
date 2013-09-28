@@ -146,7 +146,7 @@ class Part(QtGui.QWidget):
     self.buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     self.buytable.setSortingEnabled(True)
     self.buytable.sortItems(0, Qt.AscendingOrder)
-    self.valtable.setRowCount(len(part.bl))
+    self.valtable.setRowCount(len(part.bl)+1)
     i = 0
     for (when, wher, idx, price, amount) in part.bl:
       self.buytable.setItem(i, 0, QtGui.QTableWidgetItem(when))
@@ -160,11 +160,11 @@ class Part(QtGui.QWidget):
         total = 0
       self.buytable.setItem(i, 5, QtGui.QTableWidgetItem(total))
       i += 1
-    self.tagtable.setHorizontalHeaderLabels(['tag','value'])
     #self.tagtable.setSortingEnabled(True)
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
     self.tagtable.clear()
-    self.tagtable.setRowCount(len(part.tl))
+    self.tagtable.setRowCount(len(part.tl)+1)
+    self.tagtable.setHorizontalHeaderLabels(['tag','value'])
     i = 0
     for (tag, value) in part.tl:
       self.tagtable.setItem(i, 0, QtGui.QTableWidgetItem(tag))
