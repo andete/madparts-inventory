@@ -25,8 +25,11 @@ class Part(QtGui.QStandardItem):
     self.catname = new_cat_name
     self.setData(('part', new_cat_name, self.name), Qt.UserRole)
 
-  def match(self, txt):
-    return txt in self.name
+  def match(self, mdata, txt):
+    # this makes the whole thing very inefficient ...
+    cat = mdata.cat_by_name(self.catname)
+    part = cat.part_by_fullname(self.name)
+    return part.match(txt)
 
 class Category(QtGui.QStandardItem):
 
@@ -71,7 +74,7 @@ class Category(QtGui.QStandardItem):
   def add_part_item(self, item):
     self.appendRow(item)
 
-  def filter(self, txt):
+  def filter(self, mdata, txt):
     count = 0
     rc = self.rowCount()
     to_remove_ind = []
@@ -79,7 +82,7 @@ class Category(QtGui.QStandardItem):
       part_item = self.child(i)
       model_index = part_item.index()
       persistant = QtCore.QPersistentModelIndex(model_index)
-      if not part_item.match(txt):
+      if not part_item.match(mdata, txt):
          to_remove_ind.append(persistant)
       else:
          count += 1
@@ -88,7 +91,7 @@ class Category(QtGui.QStandardItem):
       item = self.takeRow(i.row())[0]
       to_hide_parts.append(item)
     for i in self.hidden_parts:
-      if i.match(txt):
+      if i.match(mdata, txt):
         self.appendRow(i)
         count += 1
       else:
@@ -167,14 +170,14 @@ class PartModel(QtGui.QStandardItemModel):
       to_remove_ind = []
       for i in range(0, rc):
         cat_item = root.child(i)
-        if cat_item.filter(txt) == 0:
+        if cat_item.filter(self.mdata, txt) == 0:
           to_remove_ind.append(QtCore.QPersistentModelIndex(cat_item.index()))
       to_hide_cats = []
       for i in to_remove_ind:
         item = self.takeRow(i.row())[0]
         to_hide_cats.append(item)
       for i in self.hidden_cats:
-        if i.filter(txt) > 0:
+        if i.filter(self.mdata, txt) > 0:
           self.appendRow(i)
         else:
           to_hide_cats.append(i)
@@ -186,9 +189,9 @@ class PartModel(QtGui.QStandardItemModel):
 
 class PartTree(QtGui.QTreeView):
 
-  def __init__(self, model, parent):
-    super(PartTree, self).__init__(parent)
-    self.parent = parent
+  def __init__(self, model, mainwin):
+    super(PartTree, self).__init__()
+    self.mainwin = mainwin
     self.setModel(model)
     self.my_model = model
     self.my_model.tree = self
@@ -205,12 +208,12 @@ class PartTree(QtGui.QTreeView):
         action.setDisabled(True)
       if shortcut != None: 
         action.setShortcut(shortcut)
-    _add("&Add Category", parent.add_cat)
+    _add("&Add Category", mainwin.add_cat)
     sep = QtGui.QAction(self)
     sep.setSeparator(True)
     self.addAction(sep)
-    _add("&Add Part", parent.add_part)
-    _add("&Clone Part", parent.clone_part)
+    _add("&Add Part", mainwin.add_part)
+    _add("&Clone Part", mainwin.clone_part)
     self.expandAll()
 
   def row_changed(self, current, previous):

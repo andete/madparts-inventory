@@ -183,6 +183,9 @@ class Part:
   def make_full_name(self):
     return Part.full_name(self.name, self.package)
 
+  def match(self, txt):
+    return txt in self.full_name
+
 class Cat:
 
   def __init__(self, data, dirname, name=None):
