@@ -19,16 +19,21 @@ class Left(QtGui.QWidget):
 
   def __init__(self, part_model, parent):
     super(Left, self).__init__()
+    self.parent = parent
     vbox = QtGui.QVBoxLayout(self)
     hbox = QtGui.QHBoxLayout()
     hbox.addWidget(QtGui.QLabel("Search:"))
     self.search_le = QtGui.QLineEdit()
+    self.search_le.textChanged.connect(self.search_changed)
     hbox.addWidget(self.search_le)
     vbox.addLayout(hbox)
     self.part_tree = PartTree(part_model, parent)
     part_model.set_selection_model(self.part_tree.selection_model)
     vbox.addWidget(self.part_tree)
     self.setLayout(vbox)
+
+  def search_changed(self, txt):
+    self.parent.part_model.filter(txt)
 
 class Right(QtGui.QTabWidget):
 

@@ -33,6 +33,7 @@ class Category(QtGui.QStandardItem):
     super(Category, self).__init__(name)
     self.setEditable(False)
     self.setData(('category', name, None), Qt.UserRole)
+    self.hidden_parts = []
 
   def add_part(self, name):
     new_part = Part(self.name, name)
@@ -66,6 +67,26 @@ class Category(QtGui.QStandardItem):
   
   def add_part_item(self, item):
     self.appendRow(item)
+
+  def filter(self, txt):
+    rc = self.rowCount()
+    to_remove_ind = []
+    to_hide_parts = []
+    for i in range(0, rc):
+      part_item = self.child(i)
+      model_index = part_item.index()
+      persistant = QtCore.QPersistentModelIndex(model_index)
+      if not txt in part_item.name:
+         to_remove_ind.append(persistant)
+    for i in to_remove_ind:
+      item = self.takeRow(i.row())[0]
+      to_hide_parts.append(item)
+    for i in self.hidden_parts:
+      if txt in i.name:
+        self.appendRow(i)
+      else:
+        to_hide_parts.append(i)
+    self.hidden_parts = to_hide_parts
 
 class PartModel(QtGui.QStandardItemModel):
 
@@ -128,6 +149,20 @@ class PartModel(QtGui.QStandardItemModel):
     #new_cat_item.sortChildren(0, Qt.AscendingOrder)
     self.selection_model.select(item.index(), QtGui.QItemSelectionModel.ClearAndSelect)
     self.being_changed = False
+
+  def filter(self, txt):
+    try:
+      self.being_changed = True
+      root = self.invisibleRootItem()
+      rc = root.rowCount()
+      for i in range(0, rc):
+        cat_item = root.child(i)
+        if cat_item.filter(txt) == 0:
+          # TODO, also remove cat
+          pass
+    finally:
+      self.sort(0)
+      self.being_changed = False
 
 class PartTree(QtGui.QTreeView):
 
