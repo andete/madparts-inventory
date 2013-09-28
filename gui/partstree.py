@@ -20,12 +20,16 @@ class Part(QtGui.QStandardItem):
     self.setData(('part', self.catname, new), Qt.UserRole)
     print 'part renamed to', new
     self.name = new
-   
+
+  def change_cat(self, new_cat_name):
+    self.catname = new_cat_name
+    self.setData(('part', new_cat_name, self.name), Qt.UserRole)
 
 class Category(QtGui.QStandardItem):
 
-  def __init__(self, name):
+  def __init__(self, part_model, name):
     self.name = name
+    self.part_model = part_model
     super(Category, self).__init__(name)
     self.setEditable(False)
     self.setData(('category', name, None), Qt.UserRole)
@@ -53,6 +57,16 @@ class Category(QtGui.QStandardItem):
         self.removeRow(i)
         return
 
+  def take_part_item(self, name):
+    rc = self.rowCount()
+    for i in range(0, rc):
+      part_item = self.child(i)
+      if part_item.name == name:
+        return self.takeRow(i)[0]
+  
+  def add_part_item(self, item):
+    self.appendRow(item)
+
 class PartModel(QtGui.QStandardItemModel):
 
   def __init__(self, data):
@@ -62,6 +76,7 @@ class PartModel(QtGui.QStandardItemModel):
     self.setHorizontalHeaderLabels(['name'])
     self.populate()
     self.sort(0)
+    self.being_changed = False
 
   def set_selection_model(self, selection_model):
     self.selection_model = selection_model
@@ -70,14 +85,14 @@ class PartModel(QtGui.QStandardItemModel):
     root = self.invisibleRootItem()
     for cat in self.mdata:
       print cat.name
-      cat_item = Category(cat.name)
+      cat_item = Category(self, cat.name)
       for part in cat:
         cat_item.add_part(part.full_name)
       root.appendRow(cat_item)
 
   def add_cat(self, cat_name):
     root = self.invisibleRootItem()
-    new_cat = Category(cat_name)
+    new_cat = Category(self, cat_name)
     root.appendRow(new_cat)
     self.sort(0)
     self.selection_model.select(new_cat.index(), QtGui.QItemSelectionModel.ClearAndSelect)
@@ -104,9 +119,15 @@ class PartModel(QtGui.QStandardItemModel):
     cat_item.rename_part(old, new)
 
   def move_part(self, old_cat_name, part):
+    self.being_changed = True
     old_cat_item = self.__find_cat_item(old_cat_name)
-    old_cat_item.remove_part_item(part.full_name)
-    self.add_part(part)
+    item = old_cat_item.take_part_item(part.full_name)
+    item.change_cat(part.cat.name)
+    new_cat_item = self.__find_cat_item(part.cat.name)
+    new_cat_item.add_part_item(item)
+    #new_cat_item.sortChildren(0, Qt.AscendingOrder)
+    self.selection_model.select(item.index(), QtGui.QItemSelectionModel.ClearAndSelect)
+    self.being_changed = False
 
 class PartTree(QtGui.QTreeView):
 
@@ -114,6 +135,7 @@ class PartTree(QtGui.QTreeView):
     super(PartTree, self).__init__(parent)
     self.parent = parent
     self.setModel(model)
+    self.my_model = model
     self.selection_model = QtGui.QItemSelectionModel(model, self)
     self.selection_model.currentRowChanged.connect(self.row_changed)
     self.setSelectionModel(self.selection_model)
@@ -136,6 +158,8 @@ class PartTree(QtGui.QTreeView):
     self.expandAll()
 
   def row_changed(self, current, previous):
+    if self.my_model.being_changed:
+      return
     (t,cn, n) = current.data(QtCore.Qt.UserRole)
     if t == 'category':
       self.parent.category_selected(cn)

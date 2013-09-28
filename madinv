@@ -39,6 +39,7 @@ class Right(QtGui.QTabWidget):
     self.gui_category = gui.part.Category()
     self.addTab(self.gui_category, "Category")
     self.gui_part = gui.part.Part()
+    self.gui_part.category_changed.connect(parent.part_category_changed)
     self.addTab(self.gui_part, "Part")
     self.tabBar().setEnabled(False)
 
@@ -205,16 +206,13 @@ class MainWin(QtGui.QMainWindow):
       os.chdir(stored_cwd)
 
   def part_category_changed(self, new_category_name):
-    # first make sure we're no longer displaying anything on the right
     part = self.part
     old_category_name = part.cat.name
     # first move the part in the data model
     self.data.move_part(part, new_category_name)
     # then move the part in the GUI model
-    self.part_model.move_part(old_category_name, part)
     self.cat = self.data.cat_by_name(new_category_name)
-    # part actually stays the same!
-    # self.part = self.cat.part_by_fullname(part.full_name)
+    self.part_model.move_part(old_category_name, part)
 
 def gui_main():
   QtCore.QCoreApplication.setOrganizationName("madparts")
