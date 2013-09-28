@@ -160,7 +160,7 @@ class MainWin(QtGui.QMainWindow):
     dialog = AddPartDialog(self, self.data, self.cat)
     if dialog.exec_() == QtGui.QDialog.Accepted:
       self.part_model.add_part(dialog.result)
-      self.part_selected(self.cat.name, dialog.result.full_name)
+      self.part_selected(dialog.result)
 
   def clone_part(self):
     if self.part is None:
@@ -170,19 +170,18 @@ class MainWin(QtGui.QMainWindow):
       self.part_model.add_part(dialog.result)
       self.part_selected(self.cat.name, dialog.result.full_name)
 
-  def category_selected(self, name):
+  def category_selected(self, cat):
     self.part = None
     old_cat = self.cat
-    self.cat = self.data.cat_by_name(name)
-    #print name, self.cat.prop
+    self.cat = cat
     p_name_ch = self.right.set_category(self.cat)
     if p_name_ch != None:
       self.part_model.rename_part(old_cat, p_name_ch[0], p_name_ch[1])
      
-  def part_selected(self, cat_name, full_name):
+  def part_selected(self, part):
     old_cat = self.cat
-    self.cat = self.data.cat_by_name(cat_name)
-    self.part = self.cat.part_by_fullname(full_name)
+    self.cat = part.cat
+    self.part = part
     p_name_ch = self.right.set_part(self.part)
     if p_name_ch != None:
       self.part_model.rename_part(old_cat, p_name_ch[0], p_name_ch[1])

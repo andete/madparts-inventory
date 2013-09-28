@@ -8,32 +8,25 @@ from PySide.QtCore import Qt
 
 class Part(QtGui.QStandardItem):
 
-  def __init__(self, catname, name):
-    self.name = name
-    self.catname = catname
+  def __init__(self, part):
+    self.is_part = True
+    self.part = part
+    name = part.full_name
+    catname = part.cat.name
     super(Part, self).__init__(name)
     self.setEditable(False)
-    self.setData(('part', catname, name), Qt.UserRole)
 
   def set_name(self, new):
     self.setText(new)
-    self.setData(('part', self.catname, new), Qt.UserRole)
     print 'part renamed to', new
-    self.name = new
 
-  def change_cat(self, new_cat_name):
-    self.catname = new_cat_name
-    self.setData(('part', new_cat_name, self.name), Qt.UserRole)
-
-  def match(self, mdata, txt):
-    # this makes the whole thing very inefficient ...
-    cat = mdata.cat_by_name(self.catname)
-    part = cat.part_by_fullname(self.name)
-    return part.match(txt)
+  def match(self, txt):
+    return self.part.match(txt)
 
 class Category(QtGui.QStandardItem):
 
   def __init__(self, part_model, cat):
+    self.is_part = False
     self.cat = cat
     name = self.cat.name
     self.part_model = part_model
@@ -42,8 +35,8 @@ class Category(QtGui.QStandardItem):
     self.setData(('category', name, None), Qt.UserRole)
     self.hidden_parts = []
 
-  def add_part(self, name):
-    new_part = Part(self.cat.name, name)
+  def add_part(self, part):
+    new_part = Part(part)
     self.appendRow(new_part)
     return new_part
 
@@ -75,7 +68,7 @@ class Category(QtGui.QStandardItem):
   def add_part_item(self, item):
     self.appendRow(item)
 
-  def filter(self, mdata, txt):
+  def filter(self, txt):
     count = 0
     rc = self.rowCount()
     to_remove_ind = []
@@ -83,7 +76,7 @@ class Category(QtGui.QStandardItem):
       part_item = self.child(i)
       model_index = part_item.index()
       persistant = QtCore.QPersistentModelIndex(model_index)
-      if not part_item.match(mdata, txt):
+      if not part_item.match(txt):
          to_remove_ind.append(persistant)
       else:
          count += 1
@@ -92,7 +85,7 @@ class Category(QtGui.QStandardItem):
       item = self.takeRow(i.row())[0]
       to_hide_parts.append(item)
     for i in self.hidden_parts:
-      if i.match(mdata, txt):
+      if i.match(txt):
         self.appendRow(i)
         count += 1
       else:
@@ -102,12 +95,11 @@ class Category(QtGui.QStandardItem):
 
 class PartModel(QtGui.QStandardItemModel):
 
-  def __init__(self, data):
+  def __init__(self, mdata):
     super(PartModel, self).__init__()
-    self.mdata = data # needs to be called self.mdata as data is an inherited member
     self.setColumnCount(1)
     self.setHorizontalHeaderLabels(['name'])
-    self.populate()
+    self.populate(mdata)
     self.sort(0)
     self.being_changed = False
     self.hidden_cats = []
@@ -115,12 +107,12 @@ class PartModel(QtGui.QStandardItemModel):
   def set_selection_model(self, selection_model):
     self.selection_model = selection_model
 
-  def populate(self):
+  def populate(self, mdata):
     root = self.invisibleRootItem()
-    for cat in self.mdata:
+    for cat in mdata:
       cat_item = Category(self, cat)
       for part in cat:
-        cat_item.add_part(part.full_name)
+        cat_item.add_part(part)
       root.appendRow(cat_item)
 
   def add_cat(self, cat):
@@ -169,14 +161,14 @@ class PartModel(QtGui.QStandardItemModel):
       to_remove_ind = []
       for i in range(0, rc):
         cat_item = root.child(i)
-        if cat_item.filter(self.mdata, txt) == 0:
+        if cat_item.filter(txt) == 0:
           to_remove_ind.append(QtCore.QPersistentModelIndex(cat_item.index()))
       to_hide_cats = []
       for i in to_remove_ind:
         item = self.takeRow(i.row())[0]
         to_hide_cats.append(item)
       for i in self.hidden_cats:
-        if i.filter(self.mdata, txt) > 0:
+        if i.filter(txt) > 0:
           self.appendRow(i)
         else:
           to_hide_cats.append(i)
@@ -218,9 +210,9 @@ class PartTree(QtGui.QTreeView):
   def row_changed(self, current, previous):
     if self.my_model.being_changed:
       return
-    (t,cn, n) = current.data(QtCore.Qt.UserRole)
-    if t == 'category':
-      self.mainwin.category_selected(cn)
+    item = self.my_model.itemFromIndex(current)
+    if item.is_part:
+      self.mainwin.part_selected(item.part)
     else:
-      self.mainwin.part_selected(cn, n)
+      self.mainwin.category_selected(item.cat)
     
