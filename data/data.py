@@ -36,13 +36,12 @@ class Part:
     self.tags = []
     if os.path.exists(self.ffn):
       self.__read_config()
-    self.__set_tags()
+      self.__set_tags()
 
   def clone(self, name, package, fn):
     new_part = Part(self.cat, fn)
     new_part.name = name
     new_part.package = package
-    new_part.full_name = Part.full_name(name, package)
     new_part.full_name_bak = new_part.full_name
     new_part.fn = fn
     new_part.ffn = os.path.join(new_part.cat.dirname, fn)
@@ -71,7 +70,6 @@ class Part:
     self.c.add_section('tag')
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'package', self.package)
-    self.full_name = Part.full_name(self.name, self.package)
     self.full_name_bak = self.full_name
     self.location = ''
     self.footprint = ''
@@ -88,7 +86,7 @@ class Part:
     self.name = self.c.get('main', 'name')
     self.package = self.c.get('main', 'package')
     #print "read package:", self.name, self.package
-    self.full_name = Part.full_name(self.name, self.package)
+    self.full_name = Part.calc_full_name(self.name, self.package)
     self.full_name_bak = self.full_name
     self.location = wd('', lambda: self.c.get('main','location'))
     self.footprint = wd('', lambda: self.c.get('main','footprint'))
@@ -140,7 +138,7 @@ class Part:
 
   def save(self):
     print 'saving', self.name
-    self.full_name = Part.full_name(self.name, self.package)
+    self.full_name = Part.calc_full_name(self.name, self.package)
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'location', self.location)
     self.c.set('main', 'footprint', self.footprint)
@@ -176,7 +174,7 @@ class Part:
     return None
 
   @staticmethod
-  def full_name(name, package):
+  def calc_full_name(name, package):
     if name == "":
       raise DataException("name is mandatory")
     fn = name
@@ -184,8 +182,9 @@ class Part:
       fn += '-' + package
     return fn
 
-  def make_full_name(self):
-    return Part.full_name(self.name, self.package)
+  @property
+  def full_name(self):
+    return Part.calc_full_name(self.name, self.package)
 
   def match(self, txt):
     for x in self.tags:
@@ -272,7 +271,7 @@ class Cat:
   def new_part(self, name, package):
     if name == '':
       raise DataException('name is not optional')
-    full_name = Part.full_name(name, package)
+    full_name = Part.calc_full_name(name, package)
     fn = self.unique_fn(full_name)
     part = Part(self, fn)
     part.set_np(name, package)
@@ -282,7 +281,7 @@ class Cat:
   def clone_part(self, to_clone_part, name, package):
     if name == '':
       raise DataException('name is not optional')
-    full_name = Part.full_name(name, package)
+    full_name = Part.calc_full_name(name, package)
     fn = self.unique_fn(full_name)
     new_part = to_clone_part.clone(name, package, fn)
     self.parts.append(new_part)

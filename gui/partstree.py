@@ -127,13 +127,13 @@ class PartModel(QtGui.QStandardItemModel):
     rc = root.rowCount()
     for i in range(0, rc):
       cat_item = root.child(i)
-      if name == cat_item.cat.name:
+      if cat_name == cat_item.cat.name:
         return cat_item
     return None
 
   def add_part(self, part):
     cat_item = self.__find_cat_item(part.cat.name)
-    new_part = cat_item.add_part(part.full_name)
+    new_part = cat_item.add_part(part)
     cat_item.sortChildren(0, Qt.AscendingOrder)
     self.selection_model.select(new_part.index(), QtGui.QItemSelectionModel.ClearAndSelect)
  
