@@ -33,6 +33,7 @@ class Left(QtGui.QWidget):
     self.setLayout(vbox)
 
   def search_changed(self, txt):
+    self.part_tree.selection_model.clear()
     self.parent.part_model.filter(txt.lower())
     # if part is still visible it will still be selected
     # if not the selection will be broken

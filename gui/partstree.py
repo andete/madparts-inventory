@@ -211,6 +211,8 @@ class PartTree(QtGui.QTreeView):
     if self.my_model.being_changed:
       return
     item = self.my_model.itemFromIndex(current)
+    if item is None:
+      return
     if item.is_part:
       self.mainwin.part_selected(item.part)
     else:
