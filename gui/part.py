@@ -196,8 +196,8 @@ class Part(QtGui.QWidget):
       return
     self.part.name = self.name.text()
     self.part.package = self.package.text()
-    self.part.full_name = self.part.make_full_name()
     self.full_name.setText(self.part.full_name)
+    print "updated fn to", self.part.full_name
 
   def valtable_item_changed(self, item):
     if self.in_setup:

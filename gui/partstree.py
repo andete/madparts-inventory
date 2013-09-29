@@ -23,6 +23,10 @@ class Part(QtGui.QStandardItem):
   def match(self, txt):
     return self.part.match(txt)
 
+  @property
+  def name(self):
+    return self.part.full_name
+
 class Category(QtGui.QStandardItem):
 
   def __init__(self, part_model, cat):
@@ -46,7 +50,7 @@ class Category(QtGui.QStandardItem):
     for i in range(0, rc):
       part_item = self.child(i)
       #print part_item.name
-      if part_item.name == old:
+      if part_item.name == new:
         part_item.set_name(new)
         return
 
@@ -138,7 +142,7 @@ class PartModel(QtGui.QStandardItemModel):
     self.selection_model.select(new_part.index(), QtGui.QItemSelectionModel.ClearAndSelect)
  
   def rename_part(self, cat, old, new):
-    print 'rename', cat, old, new
+    print 'rename', cat.name, old, new
     cat_item = self.__find_cat_item(cat.name)
     cat_item.rename_part(old, new)
 

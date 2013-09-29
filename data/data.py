@@ -86,7 +86,6 @@ class Part:
     self.name = self.c.get('main', 'name')
     self.package = self.c.get('main', 'package')
     #print "read package:", self.name, self.package
-    self.full_name = Part.calc_full_name(self.name, self.package)
     self.full_name_bak = self.full_name
     self.location = wd('', lambda: self.c.get('main','location'))
     self.footprint = wd('', lambda: self.c.get('main','footprint'))
@@ -138,7 +137,6 @@ class Part:
 
   def save(self):
     print 'saving', self.name
-    self.full_name = Part.calc_full_name(self.name, self.package)
     self.c.set('main', 'name', self.name)
     self.c.set('main', 'location', self.location)
     self.c.set('main', 'footprint', self.footprint)
@@ -166,12 +164,12 @@ class Part:
       self.c.set('tag', "%03d_value" % (i), self.tl[i][1])
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
-    self.__set_tags()
+    res = None
     if self.full_name_bak != self.full_name:
-     res = (self.full_name_bak, self.full_name)
-     self.full_name_bak = self.full_name
-     return res
-    return None
+      res = (self.full_name_bak, self.full_name)
+      self.full_name_bak = self.full_name
+    self.__set_tags()
+    return res
 
   @staticmethod
   def calc_full_name(name, package):
