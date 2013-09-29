@@ -227,10 +227,9 @@ class Part(QtGui.QWidget):
     self.category_changed.emit(new_category_name)
 
   def sync(self):
-    print "sync"
+    #print "sync"
     if self.part == None:
       return None
-    print "sync2"
     p = self.part
     p.name = self.name.text()
     p.package = self.package.text()

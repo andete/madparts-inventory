@@ -87,7 +87,7 @@ class Part:
       raise DataException('file not found ' + self.ffn)
     self.name = self.c.get('main', 'name')
     self.package = self.c.get('main', 'package')
-    print "read package:", self.name, self.package
+    #print "read package:", self.name, self.package
     self.full_name = Part.full_name(self.name, self.package)
     self.full_name_bak = self.full_name
     self.location = wd('', lambda: self.c.get('main','location'))
