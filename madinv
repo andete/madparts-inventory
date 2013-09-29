@@ -34,6 +34,8 @@ class Left(QtGui.QWidget):
 
   def search_changed(self, txt):
     self.parent.part_model.filter(txt.lower())
+    # if part is still visible it will still be selected
+    # if not the selection will be broken
 
 class Right(QtGui.QTabWidget):
 
@@ -88,12 +90,12 @@ class MainWin(QtGui.QMainWindow):
     self.add_action(groupMenu, '&Add', self.add_cat)
     
     groupMenu = menuBar.addMenu('&Part')
-    self.add_action(groupMenu, '&Add', self.add_part)
-    self.add_action(groupMenu, '&Clone', self.clone_part)
-    self.add_action(groupMenu, '&Save', self.save)
+    self.add_action(groupMenu, '&Add', self.add_part, 'Alt+A')
+    self.add_action(groupMenu, '&Clone', self.clone_part, 'Alt+C')
+    self.add_action(groupMenu, '&Save', self.save, 'Alt+S')
 
     gitMenu = menuBar.addMenu('&Git')
-    self.add_action(gitMenu, '&Push', self.git_push)
+    self.add_action(gitMenu, '&Push', self.git_push, 'Alt+P')
 
     helpMenu = menuBar.addMenu('&Help')
     self.add_action(helpMenu, '&About', self.about)
