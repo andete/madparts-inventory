@@ -128,28 +128,32 @@ class Part(QtGui.QWidget):
     if not part.single_value:
       self.quantity.setDisabled(True)
       self.threshold.setDisabled(True)
+
     self.valtable.clear()
     self.valtable.setHorizontalHeaderLabels(['#', 'value','quantity', 'threshold'])
     self.valtable.verticalHeader().hide()
-    self.valtable.setSortingEnabled(True)
-    self.valtable.sortItems(0, Qt.AscendingOrder)
     if part.single_value:
       self.valtable.hide()
     else:
+      self.valtable.show()
       self.valtable.setRowCount(len(part.vl)+1)
       i = 0
       for (val, qua, thr) in part.vl:
+        #print i, val
         self.valtable.setItem(i, 0, IntQTableWidgetItem(str(i+1)))
         self.valtable.setItem(i, 1, QtGui.QTableWidgetItem(val))
         self.valtable.setItem(i, 2, QtGui.QTableWidgetItem(qua))
         self.valtable.setItem(i, 3, QtGui.QTableWidgetItem(thr))
         i += 1
       self.valtable.setItem(i, 0, QtGui.QTableWidgetItem(str(i+1)))
+    self.valtable.setSortingEnabled(True)
+    self.valtable.sortItems(0, Qt.AscendingOrder)
+
     self.buytable.clear()
     self.buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     self.buytable.setSortingEnabled(True)
     self.buytable.sortItems(0, Qt.AscendingOrder)
-    self.valtable.setRowCount(len(part.bl)+1)
+    self.buytable.setRowCount(len(part.bl)+1)
     i = 0
     for (when, wher, idx, price, amount) in part.bl:
       self.buytable.setItem(i, 0, QtGui.QTableWidgetItem(when))
@@ -163,6 +167,7 @@ class Part(QtGui.QWidget):
         total = 0
       self.buytable.setItem(i, 5, QtGui.QTableWidgetItem(total))
       i += 1
+
     #self.tagtable.setSortingEnabled(True)
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
     self.tagtable.clear()
