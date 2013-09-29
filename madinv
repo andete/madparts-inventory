@@ -180,7 +180,7 @@ class MainWin(QtGui.QMainWindow):
     dialog = ClonePartDialog(self, self.data, self.part)
     if dialog.exec_() == QtGui.QDialog.Accepted:
       self.part_model.add_part(dialog.result)
-      self.part_selected(self.cat.name, dialog.result.full_name)
+      self.part_selected(dialog.result)
 
   def category_selected(self, cat):
     self.part = None
