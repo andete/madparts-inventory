@@ -93,6 +93,9 @@ class Part(QtGui.QWidget):
     vbox.addWidget(self.buytable)
     self.tagtable = QtGui.QTableWidget(0, 2)
     self.tagtable.setHorizontalHeaderLabels(['tag','value'])
+    header = self.tagtable.horizontalHeader()
+    header.setStretchLastSection(False)
+    header.setResizeMode(0, QtGui.QHeaderView.Stretch)
     #self.tagtable.setSortingEnabled(True)
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
     self.tagtable.itemChanged.connect(self.tagtable_item_changed)
@@ -222,7 +225,6 @@ class Part(QtGui.QWidget):
       return
     # make sure file is synced to disk first
     self.sync()
-    #self.category_combo.currentIndexChanged.disconnect()
     # signal will be caught by mainwin
     self.category_changed.emit(new_category_name)
 
