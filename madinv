@@ -96,7 +96,8 @@ class MainWin(QtGui.QMainWindow):
     self.add_action(groupMenu, '&Save', self.save, 'Alt+S')
 
     gitMenu = menuBar.addMenu('&Git')
-    self.add_action(gitMenu, '&Push', self.git_push, 'Alt+P')
+    self.git_action = self.add_action(gitMenu, 'TODO', self.do_git, 'Alt+G')
+    self.__update_git_menu()
 
     helpMenu = menuBar.addMenu('&Help')
     self.add_action(helpMenu, '&About', self.about)
@@ -135,7 +136,15 @@ class MainWin(QtGui.QMainWindow):
 
   def preferences(self):
     dialog = PreferencesDialog(self, self.settings)
-    dialog.exec_()
+    if dialog.exec_() == QtGui.QDialog.Accepted:
+      self.__update_git_menu()
+
+  def __update_git_menu(self):
+    git_push = self.settings.value("git_push", "True") == "True"
+    if git_push:
+      self.git_action.setText('Commit+Push')
+    else:
+      self.git_action.setText('Commit')
 
   def add_action(self, menu, text, slot, shortcut=None, checkable=False, checked=False):
     action = QtGui.QAction(text, self)
@@ -189,7 +198,9 @@ class MainWin(QtGui.QMainWindow):
     if p_name_ch != None:
       self.part_model.rename_part(old_cat, p_name_ch[0], p_name_ch[1])
 
-  def git_push(self):
+  def do_git(self):
+    self.save()
+    git_push = self.settings.value("git_push", "True") == "True"
     stored_cwd = os.getcwd()
     try:
       os.chdir(self.data.dir)
@@ -202,11 +213,12 @@ class MainWin(QtGui.QMainWindow):
       except subprocess.CalledProcessError:
         QtGui.QMessageBox.critical(self, "error", "failure to commit, no changes?")
         raise
-      try:
-        subprocess.check_call(["git", "push"])
-      except subprocess.CalledProcessError:
-        QtGui.QMessageBox.critical(self, "error", "failure to push; git repo settings correct?")
-        raise
+      if git_push:
+        try:
+          subprocess.check_call(["git", "push"])
+        except subprocess.CalledProcessError:
+          QtGui.QMessageBox.critical(self, "error", "failure to push; git repo settings correct?")
+          raise
     except subprocess.CalledProcessError:
       pass
     finally:

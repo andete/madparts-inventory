@@ -18,6 +18,7 @@ class PreferencesDialog(QtGui.QDialog):
     form_layout = QtGui.QFormLayout()
     
     self.dir = settings.value("basedir", default_basedir)
+    self.git_push = settings.value("git_push", "True") == "True"
     self.settings = settings
 
     def dir_select_widget():
@@ -34,7 +35,12 @@ class PreferencesDialog(QtGui.QDialog):
 
     self.dir_select = dir_select_widget()
 
-    form_layout.addRow("base directory", self.dir_select) 
+    form_layout.addRow("base directory", self.dir_select)
+
+    self.git_push_checkbox = QtGui.QCheckBox()
+    self.git_push_checkbox.setChecked(self.git_push)
+    form_layout.addRow("git push", self.git_push_checkbox)
+
     vbox.addLayout(form_layout)
     buttons = QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.RestoreDefaults | QtGui.QDialogButtonBox.Cancel
     button_box = QtGui.QDialogButtonBox(buttons, QtCore.Qt.Horizontal)
@@ -48,6 +54,8 @@ class PreferencesDialog(QtGui.QDialog):
 
   def accept(self):
     self.settings.setValue("basedir", self.dir_widget.text())
+    self.git_push = self.git_push_checkbox.isChecked()
+    self.settings.setValue("git_push", str(self.git_push))
     super(PreferencesDialog, self).accept()
 
   def browse(self):
