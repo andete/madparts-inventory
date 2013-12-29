@@ -3,7 +3,7 @@
 # (c) 2013 Joost Yervante Damad <joost@damad.be>
 # License: GPL
 
-import os, os.path, copy, shutil
+import os, os.path, copy, shutil, re
 import glob
 import ConfigParser
 
@@ -256,7 +256,7 @@ class Cat:
       y = re.search('-(....)\.part', x)
       if y is None:
         return 0
-      return int(y)
+      return int(y.group(1))
     n = [number(x) for x in l]
     m = max(n)
     m_res = m

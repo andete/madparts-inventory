@@ -6,6 +6,8 @@
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 
+import re
+
 from data.data import default_basedir, DataException
 
 class PreferencesDialog(QtGui.QDialog):
