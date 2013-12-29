@@ -96,6 +96,7 @@ class Part(QtGui.QWidget):
     header = self.tagtable.horizontalHeader()
     header.setStretchLastSection(False)
     header.setResizeMode(0, QtGui.QHeaderView.Stretch)
+    header.setResizeMode(1, QtGui.QHeaderView.Stretch)
     #self.tagtable.setSortingEnabled(True)
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
     self.tagtable.itemChanged.connect(self.tagtable_item_changed)

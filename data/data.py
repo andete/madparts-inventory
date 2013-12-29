@@ -208,20 +208,20 @@ class Cat:
     self.c = Config()
     self.prop = {}
     if name is not None:
-      self.__make_config()
+      self.__make_config(name)
     else:
       self.__read_config()
     self.parts = self.__scan_parts()
 
-  def __make_config(self):
+  def __make_config(self, name):
     if os.path.exists(self.dirname):
       raise DataException("category already exists")
-      self.c.add_section('main')
-      self.c.set('main', 'name', name)
-      os.mkdir(self.dirname)
-      with open(self.file, 'w+') as f:
-        self.c.write(f)
-      self.name = name
+    self.c.add_section('main')
+    self.c.set('main', 'name', name)
+    os.mkdir(self.dirname)
+    with open(self.file, 'w+') as f:
+      self.c.write(f)
+    self.name = name
   
   def __read_config(self):
     self.c.read(self.file)
