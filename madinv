@@ -252,7 +252,7 @@ if __name__ == '__main__':
     print "in dev tree"
     data_dir = dirname
   else:
-    data_dir = os.path.join(sys.prefix, 'share', 'madparts')
+    data_dir = os.path.join(sys.prefix, 'share', 'madinv')
     sys.path.append(data_dir)
     os.environ['DATA_DIR'] = data_dir
     print data_dir
