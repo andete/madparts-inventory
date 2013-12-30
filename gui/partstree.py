@@ -150,10 +150,9 @@ class PartModel(QtGui.QStandardItemModel):
     self.being_changed = True
     old_cat_item = self.__find_cat_item(old_cat_name)
     item = old_cat_item.take_part_item(part.full_name)
-    item.change_cat(part.cat.name)
     new_cat_item = self.__find_cat_item(part.cat.name)
     new_cat_item.add_part_item(item)
-    #new_cat_item.sortChildren(0, Qt.AscendingOrder)
+    new_cat_item.sortChildren(0, Qt.AscendingOrder)
     self.selection_model.select(item.index(), QtGui.QItemSelectionModel.ClearAndSelect)
     self.being_changed = False
 
