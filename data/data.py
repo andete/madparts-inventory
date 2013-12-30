@@ -289,7 +289,7 @@ class Data:
 
   def __init__(self, settings):
     self.cat = []
-    self.dir = settings.value("basedir", default_basedir)
+    self.dir = settings.value("basedir", os.path.join(os.environ['DATA_DIR'], default_basedir))
     if not os.path.isdir(self.dir):
       raise DataException("basedir not a directory")
     g = self.dir + '/*.cat'
