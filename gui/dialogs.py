@@ -38,6 +38,7 @@ class PreferencesDialog(QtGui.QDialog):
     self.dir_select = dir_select_widget()
 
     form_layout.addRow("base directory", self.dir_select)
+    form_layout.addRow("warning", QtGui.QLabel("(Need to restart program after changing base directory!)"))
 
     self.git_push_checkbox = QtGui.QCheckBox()
     self.git_push_checkbox.setChecked(self.git_push)
