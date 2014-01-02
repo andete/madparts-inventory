@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #
-# (c) 2013 Joost Yervante Damad <joost@damad.be>
+# (c) 2013-2014 Joost Yervante Damad <joost@damad.be>
 # License: GPL
 
 import os, os.path, copy, shutil, re
 import glob
-import ConfigParser
+import ConfigParser, StringIO
 
 # we don't want the interpolation feature
 class Config(ConfigParser.RawConfigParser):
@@ -162,8 +162,16 @@ class Part:
     for i in range(0, len(self.tl)):
       self.c.set('tag', "%03d_tag" % (i), self.tl[i][0])
       self.c.set('tag', "%03d_value" % (i), self.tl[i][1])
-    with open(self.ffn, 'w+') as f:
-      self.c.write(f)
+    output = StringIO.StringIO()
+    with open(self.ffn, 'r') as f:
+      orig = f.read()
+    self.c.write(output)
+    if output.getvalue() != orig:
+      print "file changed, writing"
+      with open(self.ffn, 'w+') as f:
+        self.c.write(f)
+    else:
+      print "no change, no write"
     res = None
     if self.full_name_bak != self.full_name:
       res = (self.full_name_bak, self.full_name)
