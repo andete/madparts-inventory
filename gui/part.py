@@ -101,6 +101,8 @@ class Part(QtGui.QWidget):
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
     self.tagtable.itemChanged.connect(self.tagtable_item_changed)
     vbox.addWidget(self.tagtable)
+    self.last_changed = QtGui.QLabel("last changed: ")
+    vbox.addWidget(self.last_changed)
     self.setLayout(vbox)
 
   def set(self, part):
@@ -179,6 +181,7 @@ class Part(QtGui.QWidget):
       self.tagtable.setItem(i, 0, QtGui.QTableWidgetItem(tag))
       self.tagtable.setItem(i, 1, QtGui.QTableWidgetItem(value))
       i += 1
+    self.last_changed.setText("last changed: %s " % (part.last_changed))
     self.in_setup = False
 
   def single_value_changed(self):

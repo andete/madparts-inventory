@@ -4,7 +4,7 @@
 # License: GPL
 
 import os, os.path, copy, shutil, re
-import glob
+import glob, datetime
 import ConfigParser, StringIO
 
 # we don't want the interpolation feature
@@ -34,6 +34,7 @@ class Part:
     self.bl = []
     self.tl = []
     self.tags = []
+    self.last_changed = "unknown"
     if os.path.exists(self.ffn):
       self.__read_config()
       self.__set_tags()
@@ -83,6 +84,8 @@ class Part:
   def __read_config(self):
     if self.c.read(self.ffn) == []:
       raise DataException('file not found ' + self.ffn)
+    datetimev = datetime.datetime.fromtimestamp(os.stat(self.ffn).st_mtime)
+    self.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
     self.name = self.c.get('main', 'name')
     self.package = self.c.get('main', 'package')
     #print "read package:", self.name, self.package
@@ -170,6 +173,8 @@ class Part:
       print "file changed, writing"
       with open(self.ffn, 'w+') as f:
         self.c.write(f)
+      datetimev = datetime.datetime.fromtimestamp(os.stat(self.ffn).st_mtime)
+      self.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
     else:
       print "no change, no write"
     res = None
