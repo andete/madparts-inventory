@@ -27,6 +27,7 @@ class Part:
 
   def __init__(self, cat, fn):
     self.cat = cat
+    self.name = ""
     self.fn = os.path.basename(fn)
     self.ffn = os.path.join(self.cat.dirname, self.fn)
     self.c = Config()
@@ -38,6 +39,9 @@ class Part:
     if os.path.exists(self.ffn):
       self.__read_config()
       self.__set_tags()
+
+  def __repr__(self):
+    return "Part(%s,%s,%s)" % (self.cat.name, self.name, self.fn)
 
   def clone(self, name, package, fn):
     new_part = Part(self.cat, fn)
@@ -166,8 +170,12 @@ class Part:
       self.c.set('tag', "%03d_tag" % (i), self.tl[i][0])
       self.c.set('tag', "%03d_value" % (i), self.tl[i][1])
     output = StringIO.StringIO()
-    with open(self.ffn, 'r') as f:
-      orig = f.read()
+    orig = ""
+    try:
+      with open(self.ffn, 'r') as f:
+        orig = f.read()
+    except IOError:
+      pass
     self.c.write(output)
     if output.getvalue() != orig:
       print "file changed, writing"
@@ -225,6 +233,9 @@ class Cat:
     else:
       self.__read_config()
     self.parts = self.__scan_parts()
+
+  def __repr__(self):
+    return "Cat(%s,%s)" % (self.name, self.dirname)
 
   def __make_config(self, name):
     if os.path.exists(self.dirname):

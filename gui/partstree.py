@@ -41,6 +41,7 @@ class Category(QtGui.QStandardItem):
     self.hidden_parts = []
 
   def add_part(self, part):
+    print "Category %s QStandardItem add_part %s" % (self.cat.name, part.name)
     new_part = Part(part)
     self.appendRow(new_part)
     return new_part
@@ -87,9 +88,6 @@ class InternalPartModel(QtGui.QStandardItemModel):
   def sort(self):
     self.sort_model.sort(0)
 
-  def set_selection_model(self, selection_model):
-    self.selection_model = selection_model
-
   def populate(self, mdata):
     root = self.invisibleRootItem()
     for cat in mdata:
@@ -102,8 +100,7 @@ class InternalPartModel(QtGui.QStandardItemModel):
     root = self.invisibleRootItem()
     new_cat = Category(self, cat)
     root.appendRow(new_cat)
-    self.sort()
-    self.selection_model.select(new_cat.index(), QtGui.QItemSelectionModel.ClearAndSelect)
+    return new_cat
 
   def __find_cat_item(self, cat_name):
     root = self.invisibleRootItem()
@@ -117,8 +114,7 @@ class InternalPartModel(QtGui.QStandardItemModel):
   def add_part(self, part):
     cat_item = self.__find_cat_item(part.cat.name)
     new_part = cat_item.add_part(part)
-    cat_item.sortChildren(0, Qt.AscendingOrder)
-    self.selection_model.select(new_part.index(), QtGui.QItemSelectionModel.ClearAndSelect)
+    return new_part
  
   def rename_part(self, cat, old, new):
     print 'rename', cat.name, old, new
@@ -131,9 +127,8 @@ class InternalPartModel(QtGui.QStandardItemModel):
     item = old_cat_item.take_part_item(part.full_name)
     new_cat_item = self.__find_cat_item(part.cat.name)
     new_cat_item.add_part_item(item)
-    new_cat_item.sortChildren(0, Qt.AscendingOrder)
-    self.selection_model.select(item.index(), QtGui.QItemSelectionModel.ClearAndSelect)
     self.being_changed = False
+    return item
 
 class PartModel(QtGui.QSortFilterProxyModel):
 
@@ -141,8 +136,10 @@ class PartModel(QtGui.QSortFilterProxyModel):
     super(PartModel, self).__init__()
     self.ip = InternalPartModel(mdata, self)
     self.setSourceModel(self.ip)
+    self.setDynamicSortFilter(True)
     self.sort(0)
     self.filter_txt = ""
+    self.selection_model = None
 
   def lessThan(self, left, right):
     leftData = self.sourceModel().data(left)
@@ -152,6 +149,7 @@ class PartModel(QtGui.QSortFilterProxyModel):
 
   def filterAcceptsRow(self, source_row, source_parent):
     # always accept Categories
+    #print "filterAcceptsRow", source_row, source_parent
     source_parent_item = self.ip.itemFromIndex(source_parent)
     if source_parent_item is None: 
       return True
@@ -170,7 +168,33 @@ class PartModel(QtGui.QSortFilterProxyModel):
     return self.ip.itemFromIndex(self.mapToSource(current))
 
   def set_selection_model(self, selmod):
-    return self.ip.set_selection_model(selmod)
+    self.selection_model = selmod
+
+  def make_selection_model(self, tree):
+    return QtGui.QItemSelectionModel(self, tree)
+
+  def add_part(self, part):
+    new_part = self.ip.add_part(part)
+    self.sort(0)
+    # for some reason when clone is done and not add
+    # the part is not correctly added as it doesn't show
+    # up in the tree and mapFromSource gives an invalid index
+    # also no row_changed is seen....
+    i = self.mapFromSource(new_part.index())
+    print i
+    self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
+
+  def add_cat(self, cat):
+    new_cat = self.ip.add_cat(part)
+    self.sort(0)
+    i = self.mapFromSource(new_cat.index())
+    self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
+  
+  def move_part(self, old_cat_name, part):
+    new_part = self.ip.move_part(old_cat_name, part)
+    self.sort(0)
+    i = self.mapFromSource(new_part.index())
+    self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
 
   def filter(self, txt):
     self.filter_txt = txt
@@ -181,6 +205,7 @@ class PartModel(QtGui.QSortFilterProxyModel):
       self.sort(0)
       self.tree.expandAll()
       self.ip.being_changed = False
+
   
 class PartTree(QtGui.QTreeView):
 
@@ -190,7 +215,7 @@ class PartTree(QtGui.QTreeView):
     self.setModel(model)
     self.my_model = model
     self.my_model.tree = self
-    self.selection_model = QtGui.QItemSelectionModel(model, self)
+    self.selection_model = model.make_selection_model(self)
     self.selection_model.currentRowChanged.connect(self.row_changed)
     self.setSelectionModel(self.selection_model)
     self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
