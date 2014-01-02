@@ -22,6 +22,7 @@ class Part(QtGui.QStandardItem):
 
   def match(self, txt):
     return self.part.match(txt)
+    
 
   @property
   def name(self):
@@ -71,31 +72,6 @@ class Category(QtGui.QStandardItem):
   
   def add_part_item(self, item):
     self.appendRow(item)
-
-  def filter(self, txt):
-    count = 0
-    rc = self.rowCount()
-    to_remove_ind = []
-    for i in range(0, rc):
-      part_item = self.child(i)
-      model_index = part_item.index()
-      persistant = QtCore.QPersistentModelIndex(model_index)
-      if not part_item.match(txt):
-         to_remove_ind.append(persistant)
-      else:
-         count += 1
-    to_hide_parts = []
-    for i in to_remove_ind:
-      item = self.takeRow(i.row())[0]
-      to_hide_parts.append(item)
-    for i in self.hidden_parts:
-      if i.match(txt):
-        self.appendRow(i)
-        count += 1
-      else:
-        to_hide_parts.append(i)
-    self.hidden_parts = to_hide_parts
-    return count
 
 class InternalPartModel(QtGui.QStandardItemModel):
 
@@ -159,31 +135,6 @@ class InternalPartModel(QtGui.QStandardItemModel):
     self.selection_model.select(item.index(), QtGui.QItemSelectionModel.ClearAndSelect)
     self.being_changed = False
 
-  def filter(self, txt):
-    try:
-      self.being_changed = True
-      root = self.invisibleRootItem()
-      rc = root.rowCount()
-      to_remove_ind = []
-      for i in range(0, rc):
-        cat_item = root.child(i)
-        if cat_item.filter(txt) == 0:
-          to_remove_ind.append(QtCore.QPersistentModelIndex(cat_item.index()))
-      to_hide_cats = []
-      for i in to_remove_ind:
-        item = self.takeRow(i.row())[0]
-        to_hide_cats.append(item)
-      for i in self.hidden_cats:
-        if i.filter(txt) > 0:
-          self.appendRow(i)
-        else:
-          to_hide_cats.append(i)
-      self.hidden_cats = to_hide_cats
-    finally:
-      self.sort()
-      self.tree.expandAll()
-      self.being_changed = False
-
 class PartModel(QtGui.QSortFilterProxyModel):
 
   def __init__(self, mdata):
@@ -191,12 +142,26 @@ class PartModel(QtGui.QSortFilterProxyModel):
     self.ip = InternalPartModel(mdata, self)
     self.setSourceModel(self.ip)
     self.sort(0)
+    self.filter_txt = ""
 
   def lessThan(self, left, right):
     leftData = self.sourceModel().data(left)
     rightData = self.sourceModel().data(right)
-    print leftData, rightData
+    #print leftData, rightData
     return leftData.lower() < rightData.lower()
+
+  def filterAcceptsRow(self, source_row, source_parent):
+    # always accept Categories
+    source_parent_item = self.ip.itemFromIndex(source_parent)
+    if source_parent_item is None: 
+      return True
+    item = source_parent_item.child(source_row)
+    if item is None:
+      return True
+    if not item.is_part:
+      return True
+    return item.match(self.filter_txt)
+    #return super(PartModel, self).filterAcceptsRow(source_row, source_parent)
 
   def being_changed(self):
     return self.ip.being_changed
@@ -207,6 +172,16 @@ class PartModel(QtGui.QSortFilterProxyModel):
   def set_selection_model(self, selmod):
     return self.ip.set_selection_model(selmod)
 
+  def filter(self, txt):
+    self.filter_txt = txt
+    try:
+      self.ip.being_changed = True
+      self.setFilterFixedString(txt)
+    finally:
+      self.sort(0)
+      self.tree.expandAll()
+      self.ip.being_changed = False
+  
 class PartTree(QtGui.QTreeView):
 
   def __init__(self, model, mainwin):
