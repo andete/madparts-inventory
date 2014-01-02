@@ -97,16 +97,19 @@ class Category(QtGui.QStandardItem):
     self.hidden_parts = to_hide_parts
     return count
 
-class PartModel(QtGui.QStandardItemModel):
+class InternalPartModel(QtGui.QStandardItemModel):
 
-  def __init__(self, mdata):
-    super(PartModel, self).__init__()
+  def __init__(self, mdata, sort_model):
+    super(InternalPartModel, self).__init__()
     self.setColumnCount(1)
     self.setHorizontalHeaderLabels(['name'])
     self.populate(mdata)
-    self.sort(0)
     self.being_changed = False
     self.hidden_cats = []
+    self.sort_model = sort_model
+
+  def sort(self):
+    self.sort_model.sort(0)
 
   def set_selection_model(self, selection_model):
     self.selection_model = selection_model
@@ -123,7 +126,7 @@ class PartModel(QtGui.QStandardItemModel):
     root = self.invisibleRootItem()
     new_cat = Category(self, cat)
     root.appendRow(new_cat)
-    self.sort(0)
+    self.sort()
     self.selection_model.select(new_cat.index(), QtGui.QItemSelectionModel.ClearAndSelect)
 
   def __find_cat_item(self, cat_name):
@@ -177,9 +180,32 @@ class PartModel(QtGui.QStandardItemModel):
           to_hide_cats.append(i)
       self.hidden_cats = to_hide_cats
     finally:
-      self.sort(0)
+      self.sort()
       self.tree.expandAll()
       self.being_changed = False
+
+class PartModel(QtGui.QSortFilterProxyModel):
+
+  def __init__(self, mdata):
+    super(PartModel, self).__init__()
+    self.ip = InternalPartModel(mdata, self)
+    self.setSourceModel(self.ip)
+    self.sort(0)
+
+  def lessThan(self, left, right):
+    leftData = self.sourceModel().data(left)
+    rightData = self.sourceModel().data(right)
+    print leftData, rightData
+    return leftData.lower() < rightData.lower()
+
+  def being_changed(self):
+    return self.ip.being_changed
+
+  def itemFromIndex(self, current):
+    return self.ip.itemFromIndex(self.mapToSource(current))
+
+  def set_selection_model(self, selmod):
+    return self.ip.set_selection_model(selmod)
 
 class PartTree(QtGui.QTreeView):
 
@@ -211,10 +237,11 @@ class PartTree(QtGui.QTreeView):
     self.expandAll()
 
   def row_changed(self, current, previous):
-    if self.my_model.being_changed:
+    if self.my_model.being_changed():
       return
     item = self.my_model.itemFromIndex(current)
     if item is None:
+      print "non item"
       return
     if item.is_part:
       self.mainwin.part_selected(item.part)
