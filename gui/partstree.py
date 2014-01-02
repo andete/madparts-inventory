@@ -22,7 +22,6 @@ class Part(QtGui.QStandardItem):
 
   def match(self, txt):
     return self.part.match(txt)
-    
 
   @property
   def name(self):
@@ -41,7 +40,6 @@ class Category(QtGui.QStandardItem):
     self.hidden_parts = []
 
   def add_part(self, part):
-    print "Category %s QStandardItem add_part %s" % (self.cat.name, part.name)
     new_part = Part(part)
     self.appendRow(new_part)
     return new_part
@@ -51,7 +49,6 @@ class Category(QtGui.QStandardItem):
     rc = self.rowCount()
     for i in range(0, rc):
       part_item = self.child(i)
-      #print part_item.name
       if part_item.name == new:
         part_item.set_name(new)
         return
@@ -176,12 +173,7 @@ class PartModel(QtGui.QSortFilterProxyModel):
   def add_part(self, part):
     new_part = self.ip.add_part(part)
     self.sort(0)
-    # for some reason when clone is done and not add
-    # the part is not correctly added as it doesn't show
-    # up in the tree and mapFromSource gives an invalid index
-    # also no row_changed is seen....
     i = self.mapFromSource(new_part.index())
-    print i
     self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
 
   def add_cat(self, cat):

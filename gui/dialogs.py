@@ -155,6 +155,7 @@ class ClonePartDialog(QtGui.QDialog):
     self.result = None
     try:
       self.result = self.to_clone_part.cat.clone_part(self.to_clone_part, name, package)
+      self.result.save()
       super(ClonePartDialog, self).accept()
     except DataException as e:
       QtGui.QMessageBox.critical(self, "error", str(e))
