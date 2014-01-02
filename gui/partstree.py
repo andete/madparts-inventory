@@ -188,6 +188,9 @@ class PartModel(QtGui.QSortFilterProxyModel):
     i = self.mapFromSource(new_part.index())
     self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
 
+  def rename_part(self, cat, old, new):
+    return self.ip.rename_part(cat, old, new)
+
   def filter(self, txt):
     self.filter_txt = txt
     try:
