@@ -89,6 +89,8 @@ class MainWin(QtGui.QMainWindow):
 
     groupMenu = menuBar.addMenu('&Category')
     self.add_action(groupMenu, '&Add', self.add_cat)
+    self.add_action(groupMenu, '&Collapse all', self.collapse_all)
+    self.add_action(groupMenu, '&Expand all', self.expand_all)
     
     groupMenu = menuBar.addMenu('&Part')
     self.add_action(groupMenu, '&Add', self.add_part, 'Alt+A')
@@ -133,6 +135,12 @@ class MainWin(QtGui.QMainWindow):
 <p align="center"><a href="http://madparts.org">http://madparts.org</a></p>
 """
     QtGui.QMessageBox.about(self, "about madparts", a)
+
+  def expand_all(self):
+    self.left.part_tree.expandAll()
+
+  def collapse_all(self):
+    self.left.part_tree.collapseAll()
 
   def preferences(self):
     dialog = PreferencesDialog(self, self.settings)

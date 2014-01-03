@@ -214,6 +214,7 @@ class Part:
   def __set_tags(self):
     self.tags = []
     self.tags.append(self.full_name.lower())
+    self.tags.append(self.location.lower())
     for (k,v) in self.tl:
       if k != "":
         self.tags.append(k.lower())

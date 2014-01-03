@@ -177,7 +177,7 @@ class PartModel(QtGui.QSortFilterProxyModel):
     self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
 
   def add_cat(self, cat):
-    new_cat = self.ip.add_cat(part)
+    new_cat = self.ip.add_cat(cat)
     self.sort(0)
     i = self.mapFromSource(new_cat.index())
     self.selection_model.select(i, QtGui.QItemSelectionModel.ClearAndSelect)
@@ -229,7 +229,7 @@ class PartTree(QtGui.QTreeView):
     self.addAction(sep)
     _add("&Add Part", mainwin.add_part)
     _add("&Clone Part", mainwin.clone_part)
-    self.expandAll()
+    # self.expandAll() default collapsed
 
   def row_changed(self, current, previous):
     if self.my_model.being_changed():
