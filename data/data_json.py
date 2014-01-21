@@ -57,17 +57,18 @@ class Part(object):
   def save_new(self, (name, package)):
     return self.save()
 
-  def save(self):
-    print 'saving', self.name
+  @staticmethod
+  def save_part(part):
+    print 'saving', part.name
     j = {}
     def set_to_json(name, default=''):
-      j[name] = getattr(self, name, default)
+      j[name] = getattr(part, name, default)
     for x in ['name', 'location', 'footprint', 'quantity', 'threshold']:
        set_to_json(x)
     set_to_json('single_value', True)
 
     j['values'] = []
-    for (v,q,t) in self.value:
+    for (v,q,t) in part.value:
       d = {}
       d['value'] = v
       d['quantity'] = q
@@ -75,7 +76,7 @@ class Part(object):
       j['values'].append(d)
 
     j['buy'] = []
-    for (w1,w2,i,p,a) in self.buy:
+    for (w1,w2,i,p,a) in part.buy:
       d = {}
       d['when'] = w1
       d['where'] = w2
@@ -85,22 +86,26 @@ class Part(object):
       j['buy'].append(d)
 
     j['tag'] = {}
-    for (k,v) in self.tag:
+    for (k,v) in part.tag:
       j['tag'][k] = v
-    print j
     orig = ""
     try:
-      with open(self.ffn, 'r') as f:
+      with open(part.ffn, 'r') as f:
         orig = json.load(f)
     except IOError:
+      pass
+    except ValueError:
       pass
     output = StringIO.StringIO()
     json.dump(j, output, indent=2)
     if output.getvalue() != orig:
       print "file changed, writing"
-      with open(self.ffn, 'w+') as f:
+      with open(part.ffn, 'w+') as f:
         json.dump(j, f, indent=2)
-      datetimev = datetime.datetime.fromtimestamp(os.stat(self.ffn).st_mtime)
-      self.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
+      datetimev = datetime.datetime.fromtimestamp(os.stat(part.ffn).st_mtime)
+      part.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
     else:
       print "no change, no write"
+
+  def save(self):
+    Part.save_part(self)

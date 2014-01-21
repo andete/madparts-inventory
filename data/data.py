@@ -24,7 +24,9 @@ class Part(object):
     try:
       part.p = data_json.Part(cat.dirname, fn)
     except data_json.NotJsonError:
-      part.p = data_ini.Part(cat.dirname, fn)
+      i = data_ini.Part(cat.dirname, fn)
+      i.save_to_json()
+      part.p = data_json.Part(cat.dirname, fn)
     if not name_package is None:
       part.p.save_new(name_package)
     part.__set_tags()

@@ -150,6 +150,10 @@ class Part(object):
     else:
       print "no change, no write"
 
+  def save_to_json(self):
+    import data_json
+    data_json.Part.save_part(self)
+
 class Cat(object):
 
   def __init__(self, dirname, name=None):

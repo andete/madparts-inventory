@@ -141,7 +141,7 @@ class Part(QtGui.QWidget):
       self.valtable.show()
       self.valtable.setRowCount(len(part.value)+1)
       i = 0
-      for (val, qua, thr) in part.vl:
+      for (val, qua, thr) in part.value:
         #print i, val
         self.valtable.setItem(i, 0, IntQTableWidgetItem(str(i+1)))
         self.valtable.setItem(i, 1, QtGui.QTableWidgetItem(val))
