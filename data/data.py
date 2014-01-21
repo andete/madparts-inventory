@@ -21,10 +21,10 @@ class Part(object):
   @staticmethod
   def make(cat, fn, name_package = None):
     part = Part(cat)
-    #try:
-    #  part.p = data_json.Part(cat.dirname, fn)
-    #except NotJsonError:
-    part.p = data_ini.Part(cat.dirname, fn)
+    try:
+      part.p = data_json.Part(cat.dirname, fn)
+    except data_json.NotJsonError:
+      part.p = data_ini.Part(cat.dirname, fn)
     if not name_package is None:
       part.p.save_new(name_package)
     part.__set_tags()
@@ -45,15 +45,16 @@ class Part(object):
 
   def clone(self, name, package, fn):
     new_part = Part(self.cat)
+    new_part.p = data_json.Part(self.cat.dirname, fn)
     new_part.name = name
-    new_part.value = copy.deepcopy(self.value)
-    new_part.buy = copy.deepcopy(self.buy)
-    new_part.tag = copy.deepcopy(self.tag)
+    new_part.value[:] = copy.deepcopy(self.value)
+    new_part.buy[:] = copy.deepcopy(self.buy)
+    new_part.tag[:] = copy.deepcopy(self.tag)
     new_part.location = copy.deepcopy(self.location)
     new_part.footprint = copy.deepcopy(self.footprint)
     new_part.single_value = copy.deepcopy(self.single_value)
-    part.package = package
-    new_part.p = data_ini.Part(self.cat.dirname, fn)
+    new_part.package = package
+    # TODO: just save
     new_part.p.save_new((name, package))
     new_part.__set_tags()
     new_part.full_name_bak = new_part.full_name
@@ -122,6 +123,10 @@ class Part(object):
   @property
   def value(self):
      return self.p.value
+ 
+  @value.setter
+  def value(self, value):
+     self.p.value = value
 
   @property
   def buy(self):

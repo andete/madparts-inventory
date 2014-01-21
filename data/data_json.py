@@ -6,6 +6,9 @@
 import os, os.path, datetime
 import json, StringIO
 
+class NotJsonError(Exception):
+  pass
+
 class Part(object):
 
   def __init__(self, dirname, fn):
@@ -13,17 +16,25 @@ class Part(object):
     self.dirname = dirname
     self.fn = os.path.basename(fn)
     self.ffn = os.path.join(self.dirname, self.fn)
+    self.location = ''
+    self.footprint = ''
+    self.single_value = True
+    self.quantity = ''
+    self.threshold = ''
     self.value = [] # value list
     self.buy = [] # buy list
     self.tag = [] # tag list
     self.last_changed = "unknown"
     if os.path.exists(self.ffn):
-      self.__read_json()
+      try:
+        self.__read_json()
+      except ValueError:
+        raise NotJsonError
 
-  def __read_config(self):
+  def __read_json(self):
     j = None
     with open(self.ffn) as f:
-      j = json.read(f)
+      j = json.load(f)
     datetimev = datetime.datetime.fromtimestamp(os.stat(self.ffn).st_mtime)
     self.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
     def set_from_json(name, default=''):
@@ -39,15 +50,18 @@ class Part(object):
     for x in j['buy']:
       # TODO keep dict
       self.buy.append((x['when'], x['where'], x['id'], x['price'], x['amount']))
-    for (k,v) in j['tag'].items:
+    for (k,v) in j['tag'].items():
       # TODO keep dict
       self.tag.append((k,v))
+
+  def save_new(self, (name, package)):
+    return self.save()
 
   def save(self):
     print 'saving', self.name
     j = {}
     def set_to_json(name, default=''):
-      j['name'] = getattr(self, name, default)
+      j[name] = getattr(self, name, default)
     for x in ['name', 'location', 'footprint', 'quantity', 'threshold']:
        set_to_json(x)
     set_to_json('single_value', True)
@@ -73,19 +87,19 @@ class Part(object):
     j['tag'] = {}
     for (k,v) in self.tag:
       j['tag'][k] = v
-
-    output = StringIO.StringIO()
+    print j
     orig = ""
     try:
       with open(self.ffn, 'r') as f:
-        orig = json.read(f)
+        orig = json.load(f)
     except IOError:
       pass
-    json.write(output)
+    output = StringIO.StringIO()
+    json.dump(j, output, indent=2)
     if output.getvalue() != orig:
       print "file changed, writing"
       with open(self.ffn, 'w+') as f:
-        json.write(f)
+        json.dump(j, f, indent=2)
       datetimev = datetime.datetime.fromtimestamp(os.stat(self.ffn).st_mtime)
       self.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
     else:
