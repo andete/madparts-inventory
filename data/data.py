@@ -5,7 +5,7 @@
 
 import os, os.path, copy, shutil, re
 import glob, datetime
-import xini, xjson
+import data_ini, data_json
 
 default_basedir = "example"
 
@@ -22,9 +22,9 @@ class Part(object):
   def make(cat, fn, name_package = None):
     part = Part(cat)
     try:
-      part.p = json.Part(cat.dirname, fn)
+      part.p = data_json.Part(cat.dirname, fn)
     except NotJsonError:
-      part.p = ini.Part(cat.dirname, fn)
+      part.p = data_ini.Part(cat.dirname, fn)
     if not name_package is None:
       part.p.save_new(name_package)
     part.__set_tags()
@@ -53,7 +53,7 @@ class Part(object):
     new_part.footprint = copy.deepcopy(self.footprint)
     new_part.single_value = copy.deepcopy(self.single_value)
     part.package = package
-    new_part.p = ini.Part(self.cat.dirname, fn)
+    new_part.p = data_ini.Part(self.cat.dirname, fn)
     new_part.p.save_new((name, package))
     new_part.__set_tags()
     new_part.full_name_bak = new_part.full_name
@@ -169,7 +169,7 @@ class Cat(object):
   @staticmethod
   def make(data, dirname, name=None):
     cat = Cat(data)
-    cat.p = ini.Cat(dirname, name)
+    cat.p = data_ini.Cat(dirname, name)
     cat.parts = cat.__scan_parts()
     return cat
 
