@@ -3,7 +3,8 @@
 *~
 build
 dist
-madparts.egg-info
+*.egg-info
+*.zip
 debian/*.debhelper
 debian/*.log
 debian/*.substvars
