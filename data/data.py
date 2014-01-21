@@ -26,6 +26,9 @@ class Part(object):
     part.full_name_bak = part.full_name
     return part
 
+  def __repr__(self):
+    return "Part(%s,%s,%s)" % (self.cat.name, self.name, self.fn)
+
   def save(self):
     self.p.save()
     res = None
@@ -37,6 +40,7 @@ class Part(object):
 
   def clone(self, name, package, fn):
     new_part = Part(self.cat)
+    # TODO: clone can be implemented on this level
     new_part.p = self.p.clone(name, package, fn)
     new_part.__set_tags()
     new_part.full_name_bak = new_part.full_name
@@ -145,39 +149,36 @@ class Part(object):
     return False
 
 
-class Cat:
+class Cat(object):
 
-  def __init__(self, data, dirname, name=None):
+  def __init__(self, data):
     self.data = data
-    self.dirname = dirname
-    self.file = os.path.join(self.dirname, 'cat.ini')
-    self.c = ini.Config()
-    self.prop = {}
-    if name is not None:
-      self.__make_config(name)
-    else:
-      self.__read_config()
-    self.parts = self.__scan_parts()
+
+  @staticmethod
+  def make(data, dirname, name=None):
+    cat = Cat(data)
+    cat.p = ini.Cat(dirname, name)
+    cat.parts = cat.__scan_parts()
+    return cat
 
   def __repr__(self):
     return "Cat(%s,%s)" % (self.name, self.dirname)
 
-  def __make_config(self, name):
-    if os.path.exists(self.dirname):
-      raise DataException("category already exists")
-    self.c.add_section('main')
-    self.c.set('main', 'name', name)
-    os.mkdir(self.dirname)
-    with open(self.file, 'w+') as f:
-      self.c.write(f)
-    self.name = name
-  
-  def __read_config(self):
-    self.c.read(self.file)
-    self.name = self.c.get('main', 'name')
-    if self.c.has_section('properties'):
-      for (k,v) in self.c.items('properties'):
-        self.prop[k] = v
+  @property
+  def name(self):
+    return self.p.name
+
+  @property
+  def prop(self):
+    return self.p.prop
+
+  @property
+  def dirname(self):
+    return self.p.dirname
+
+  @property
+  def file(self):
+    return self.p.file
 
   def __scan_parts(self): 
      l = [Part.make(self, pfn) for pfn in glob.glob(os.path.join(self.dirname, '*.part'))]
@@ -243,9 +244,7 @@ class Data:
       raise DataException("basedir not a directory")
     g = self.dir + '/*.cat'
     for c in glob.glob(os.path.join(self.dir, '*.cat')):
-      ca = Cat(self, c)
-      #print ca, ca.name
-      self.cat.append(ca)
+      self.cat.append(Cat.make(self, c))
     self.sort()
 
   def sort(self):
@@ -262,7 +261,7 @@ class Data:
 
   def new_category(self, name):
     ffn = os.path.join(self.dir, Cat.dirname_from_name(name))
-    c = Cat(self, ffn, name)
+    c = Cat.make(self, ffn, name)
     self.cat.append(c)
     self.sort()
     return c

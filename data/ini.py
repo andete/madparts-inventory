@@ -175,3 +175,32 @@ class Part(object):
       self.last_changed = datetimev.strftime("%Y-%m-%d %a %H:%M:%S")
     else:
       print "no change, no write"
+
+class Cat(object):
+
+  def __init__(self, dirname, name=None):
+    self.dirname = dirname
+    self.file = os.path.join(self.dirname, 'cat.ini')
+    self.c = Config()
+    self.prop = {}
+    if name is not None:
+      self.__make(name)
+    else:
+      self.__load()
+
+  def __make(self, name):
+    if os.path.exists(self.dirname):
+      raise DataException("category already exists")
+    self.c.add_section('main')
+    self.c.set('main', 'name', name)
+    os.mkdir(self.dirname)
+    with open(self.file, 'w+') as f:
+      self.c.write(f)
+    self.name = name
+  
+  def __load(self):
+    self.c.read(self.file)
+    self.name = self.c.get('main', 'name')
+    if self.c.has_section('properties'):
+      for (k,v) in self.c.items('properties'):
+        self.prop[k] = v
