@@ -25,16 +25,12 @@ class Part(object):
     self.fn = os.path.basename(fn)
     self.ffn = os.path.join(self.dirname, self.fn)
     self.c = Config()
-    self.vl = [] # value list
-    self.bl = [] # buy list
-    self.tl = [] # tag list
-    self.tags = []
+    self.value = []
+    self.buy = []
+    self.tag = []
     self.last_changed = "unknown"
     if os.path.exists(self.ffn):
       self.__read_config()
-
-  def __repr__(self):
-    return "Part(%s,%s,%s)" % (self.cat.name, self.name, self.fn)
 
   def save_new(self, name_package):
     (name, package) = name_package
@@ -53,7 +49,6 @@ class Part(object):
     self.threshold = ''
     with open(self.ffn, 'w+') as f:
       self.c.write(f)
-    self.__set_tags()
 
   def __read_config(self):
     if self.c.read(self.ffn) == []:
@@ -81,7 +76,7 @@ class Part(object):
       elif w == 'threshold':
         t.append(v)
         #print t
-        self.vl.append((t[0],t[1],t[2]))
+        self.value.append((t[0],t[1],t[2]))
     if not self.c.has_section('buy'):
       self.c.add_section('buy')
     for (k,v) in self.c.items('buy'):
@@ -98,7 +93,7 @@ class Part(object):
         t.append(v)
       elif w == 'amount':
         t.append(v)
-        self.bl.append((t[0],t[1],t[2],t[3],t[4]))
+        self.buy.append((t[0],t[1],t[2],t[3],t[4]))
     if not self.c.has_section('tag'):
       self.c.add_section('tag')
     for (k,v) in self.c.items('tag'):
@@ -109,7 +104,7 @@ class Part(object):
         t = [v]
       elif w == 'value':
         t.append(v)
-        self.tl.append((t[0],t[1]))
+        self.tag.append((t[0],t[1]))
 
   def save(self):
     print 'saving', self.name
@@ -121,23 +116,23 @@ class Part(object):
     self.c.set('main', 'threshold', self.threshold)
     self.c.remove_section('values')
     self.c.add_section('values')
-    for i in range(0, len(self.vl)):
-      self.c.set('values', "%03d_value" % (i), self.vl[i][0])
-      self.c.set('values', "%03d_quantity" % (i), self.vl[i][1])
-      self.c.set('values', "%03d_threshold" % (i), self.vl[i][2])
+    for i in range(0, len(self.value)):
+      self.c.set('values', "%03d_value" % (i), self.value[i][0])
+      self.c.set('values', "%03d_quantity" % (i), self.value[i][1])
+      self.c.set('values', "%03d_threshold" % (i), self.value[i][2])
     self.c.remove_section('buy')
     self.c.add_section('buy')
-    for i in range(0, len(self.bl)):
-      self.c.set('buy', "%03d_when" % (i), self.bl[i][0])
-      self.c.set('buy', "%03d_where" % (i), self.bl[i][1])
-      self.c.set('buy', "%03d_id" % (i), self.bl[i][2])
-      self.c.set('buy', "%03d_price" % (i), self.bl[i][3])
-      self.c.set('buy', "%03d_amount" % (i), self.bl[i][4])
+    for i in range(0, len(self.buy)):
+      self.c.set('buy', "%03d_when" % (i), self.buy[i][0])
+      self.c.set('buy', "%03d_where" % (i), self.buy[i][1])
+      self.c.set('buy', "%03d_id" % (i), self.buy[i][2])
+      self.c.set('buy', "%03d_price" % (i), self.buy[i][3])
+      self.c.set('buy', "%03d_amount" % (i), self.buy[i][4])
     self.c.remove_section('tag')
     self.c.add_section('tag')
-    for i in range(0, len(self.tl)):
-      self.c.set('tag', "%03d_tag" % (i), self.tl[i][0])
-      self.c.set('tag', "%03d_value" % (i), self.tl[i][1])
+    for i in range(0, len(self.tag)):
+      self.c.set('tag', "%03d_tag" % (i), self.tag[i][0])
+      self.c.set('tag', "%03d_value" % (i), self.tag[i][1])
     output = StringIO.StringIO()
     orig = ""
     try:

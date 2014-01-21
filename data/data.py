@@ -43,9 +43,9 @@ class Part(object):
   def clone(self, name, package, fn):
     new_part = Part(self.cat)
     new_part.name = name
-    new_part.vl = copy.deepcopy(self.vl)
-    new_part.bl = copy.deepcopy(self.bl)
-    new_part.tl = copy.deepcopy(self.tl)
+    new_part.value = copy.deepcopy(self.value)
+    new_part.buy = copy.deepcopy(self.buy)
+    new_part.tag = copy.deepcopy(self.tag)
     new_part.location = copy.deepcopy(self.location)
     new_part.footprint = copy.deepcopy(self.footprint)
     new_part.single_value = copy.deepcopy(self.single_value)
@@ -116,18 +116,17 @@ class Part(object):
   def single_value(self, value):
      self.p.single_value = value
 
-  # TODO better names for these!
   @property
-  def vl(self):
-     return self.p.vl
+  def value(self):
+     return self.p.value
 
   @property
-  def bl(self):
-     return self.p.bl
+  def buy(self):
+     return self.p.buy
 
   @property
-  def tl(self):
-     return self.p.tl
+  def tag(self):
+     return self.p.tag
 
   @staticmethod
   def calc_full_name(name, package):
