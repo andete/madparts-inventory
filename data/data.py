@@ -19,9 +19,11 @@ class Part(object):
     self.cat = cat
 
   @staticmethod
-  def make(cat, fn):
+  def make(cat, fn, name_package = None):
     part = Part(cat)
-    part.p = ini.Part(cat, fn)
+    part.p = ini.Part(cat.dirname, fn)
+    if not name_package is None:
+      part.p.save_new(name_package)
     part.__set_tags()
     part.full_name_bak = part.full_name
     return part
@@ -40,8 +42,16 @@ class Part(object):
 
   def clone(self, name, package, fn):
     new_part = Part(self.cat)
-    # TODO: clone can be implemented on this level
-    new_part.p = self.p.clone(name, package, fn)
+    new_part.name = name
+    new_part.vl = copy.deepcopy(self.vl)
+    new_part.bl = copy.deepcopy(self.bl)
+    new_part.tl = copy.deepcopy(self.tl)
+    new_part.location = copy.deepcopy(self.location)
+    new_part.footprint = copy.deepcopy(self.footprint)
+    new_part.single_value = copy.deepcopy(self.single_value)
+    part.package = package
+    new_part.p = ini.Part(self.cat.dirname, fn)
+    new_part.p.save_new((name, package))
     new_part.__set_tags()
     new_part.full_name_bak = new_part.full_name
     return new_part
@@ -221,8 +231,7 @@ class Cat(object):
       raise DataException('name is not optional')
     full_name = Part.calc_full_name(name, package)
     fn = self.unique_fn(full_name)
-    part = Part.make(self, fn)
-    part.set_np(name, package)
+    part = Part.make(self, fn, (name, package))
     self.parts.append(part)
     return part
 

@@ -19,11 +19,11 @@ def wd(d, f):
 
 class Part(object):
 
-  def __init__(self, cat, fn):
-    self.cat = cat
+  def __init__(self, dirname, fn):
     self.name = ""
+    self.dirname = dirname
     self.fn = os.path.basename(fn)
-    self.ffn = os.path.join(self.cat.dirname, self.fn)
+    self.ffn = os.path.join(self.dirname, self.fn)
     self.c = Config()
     self.vl = [] # value list
     self.bl = [] # buy list
@@ -36,29 +36,8 @@ class Part(object):
   def __repr__(self):
     return "Part(%s,%s,%s)" % (self.cat.name, self.name, self.fn)
 
-  def clone(self, name, package, fn):
-    new_part = Part(self.cat, fn)
-    new_part.name = name
-    new_part.package = package
-    new_part.fn = fn
-    new_part.ffn = os.path.join(new_part.cat.dirname, fn)
-    new_part.vl = copy.deepcopy(self.vl)
-    new_part.bl = copy.deepcopy(self.bl)
-    new_part.tl = copy.deepcopy(self.tl)
-    new_part.location = copy.deepcopy(self.location)
-    new_part.footprint = copy.deepcopy(self.footprint)
-    new_part.single_value = copy.deepcopy(self.single_value) # TODO single value is implied from one value in value list
-    new_part.quantity = copy.deepcopy(self.quantity)
-    new_part.threshold = copy.deepcopy(self.threshold)
-    new_part.c.add_section('main')
-    new_part.c.add_section('values')
-    new_part.c.add_section('buy')
-    new_part.c.add_section('tag')
-    new_part.c.set('main', 'name', name)
-    new_part.c.set('main', 'package', package)
-    return new_part
-
-  def set_np(self, name, package):
+  def save_new(self, name_package):
+    (name, package) = name_package
     self.name = name
     self.package = package
     self.c.add_section('main')
