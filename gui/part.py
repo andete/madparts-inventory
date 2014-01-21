@@ -249,7 +249,7 @@ class Part(QtGui.QWidget):
     p.single_value = self.single_value.isChecked()
     p.quantity = self.quantity.text()
     p.threshold = self.threshold.text()
-    vl = []
+    p.vl[:] = [] # change list in place
     for i in range(0, self.valtable.rowCount()):
        def getval(r, c):
          x = self.valtable.item(r, c)
@@ -260,9 +260,8 @@ class Part(QtGui.QWidget):
        qua = getval(i, 2)
        thr = getval(i, 3)
        if val != '' or qua != '' or thr != '':
-         vl.append((val, qua, thr))
-    p.vl = vl
-    bl = []
+         p.vl.append((val, qua, thr))
+    p.bl[:] = []
     for i in range(0, self.buytable.rowCount()):
        def getval(r, c):
          x = self.buytable.item(r, c)
@@ -275,9 +274,8 @@ class Part(QtGui.QWidget):
        price = getval(i, 3)
        amount = getval(i, 4)
        if wher != '':
-         bl.append((when, wher, idx, price, amount))
-    p.bl = bl
-    tl = []
+         p.bl.append((when, wher, idx, price, amount))
+    p.tl[:] = []
     for i in range(0, self.tagtable.rowCount()):
       def getval(r, c):
         x = self.tagtable.item(r, c)
@@ -287,6 +285,5 @@ class Part(QtGui.QWidget):
       tag = getval(i, 0)
       value = getval(i, 1)
       if tag != '':
-        tl.append((tag, value))
-    p.tl = tl
+        p.tl.append((tag, value))
     return p.save()

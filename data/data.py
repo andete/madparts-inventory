@@ -13,7 +13,7 @@ class DataException(Exception):
   pass
 
 # part proxy
-class Part:
+class Part(object):
   
   def __init__(self, cat, fn):
     self.cat = cat
@@ -34,25 +34,49 @@ class Part:
   def name(self):
      return self.p.name
 
+  @name.setter
+  def name(self, value):
+     self.p.name = value
+
   @property
   def package(self):
      return self.p.package
+
+  @package.setter
+  def package(self, value):
+     self.p.package = value
 
   @property
   def location(self):
      return self.p.location
 
+  @location.setter
+  def location(self, value):
+     self.p.location = value
+
   @property
   def footprint(self):
      return self.p.footprint
+
+  @footprint.setter
+  def footprint(self, value):
+     self.p.footprint = value
 
   @property
   def quantity(self):
      return self.p.quantity
 
+  @quantity.setter
+  def quantity(self, value):
+     self.p.quantity = value
+
   @property
   def threshold(self):
      return self.p.threshold
+
+  @threshold.setter
+  def threshold(self, value):
+     self.p.threshold = value
 
   @property
   def last_changed(self):
@@ -62,6 +86,11 @@ class Part:
   def single_value(self):
      return self.p.single_value
 
+  @single_value.setter
+  def single_value(self, value):
+     self.p.single_value = value
+
+  # TODO better names for these!
   @property
   def vl(self):
      return self.p.vl
