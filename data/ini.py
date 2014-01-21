@@ -17,7 +17,7 @@ def wd(d, f):
   except ConfigParser.NoOptionError:
     return d
 
-class Part:
+class Part(object):
 
   def __init__(self, cat, fn):
     self.cat = cat

@@ -15,11 +15,16 @@ class DataException(Exception):
 # part proxy
 class Part(object):
   
-  def __init__(self, cat, fn):
+  def __init__(self, cat):
     self.cat = cat
-    self.p = ini.Part(cat, fn)
-    self.__set_tags()
-    self.full_name_bak = self.full_name
+
+  @staticmethod
+  def make(cat, fn):
+    part = Part(cat)
+    part.p = ini.Part(cat, fn)
+    part.__set_tags()
+    part.full_name_bak = part.full_name
+    return part
 
   def save(self):
     self.p.save()
@@ -29,6 +34,13 @@ class Part(object):
     self.full_name_bak = self.full_name
     self.__set_tags()
     return res
+
+  def clone(self, name, package, fn):
+    new_part = Part(self.cat)
+    new_part.p = self.p.clone(name, package, fn)
+    new_part.__set_tags()
+    new_part.full_name_bak = new_part.full_name
+    return new_part
 
   @property
   def name(self):
@@ -168,7 +180,7 @@ class Cat:
         self.prop[k] = v
 
   def __scan_parts(self): 
-     l = [Part(self, pfn) for pfn in glob.glob(os.path.join(self.dirname, '*.part'))]
+     l = [Part.make(self, pfn) for pfn in glob.glob(os.path.join(self.dirname, '*.part'))]
      l.sort(key=lambda p:p.name)
      return l
 
@@ -208,7 +220,7 @@ class Cat:
       raise DataException('name is not optional')
     full_name = Part.calc_full_name(name, package)
     fn = self.unique_fn(full_name)
-    part = Part(self, fn)
+    part = Part.make(self, fn)
     part.set_np(name, package)
     self.parts.append(part)
     return part
