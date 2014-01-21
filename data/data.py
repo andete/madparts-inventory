@@ -5,7 +5,7 @@
 
 import os, os.path, copy, shutil, re
 import glob, datetime
-import ini
+import xini, xjson
 
 default_basedir = "example"
 
@@ -21,7 +21,10 @@ class Part(object):
   @staticmethod
   def make(cat, fn, name_package = None):
     part = Part(cat)
-    part.p = ini.Part(cat.dirname, fn)
+    try:
+      part.p = json.Part(cat.dirname, fn)
+    except NotJsonError:
+      part.p = ini.Part(cat.dirname, fn)
     if not name_package is None:
       part.p.save_new(name_package)
     part.__set_tags()
