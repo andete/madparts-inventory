@@ -72,7 +72,7 @@ class Part(object):
 
     j['tag'] = {}
     for (k,v) in self.tag:
-    j['tag'][k] = v
+      j['tag'][k] = v
 
     output = StringIO.StringIO()
     orig = ""

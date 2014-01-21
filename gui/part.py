@@ -139,7 +139,7 @@ class Part(QtGui.QWidget):
       self.valtable.hide()
     else:
       self.valtable.show()
-      self.valtable.setRowCount(len(part.vl)+1)
+      self.valtable.setRowCount(len(part.value)+1)
       i = 0
       for (val, qua, thr) in part.vl:
         #print i, val
@@ -156,9 +156,9 @@ class Part(QtGui.QWidget):
     self.buytable.setHorizontalHeaderLabels(['when','where','id', 'price','amount','total'])
     self.buytable.setSortingEnabled(True)
     self.buytable.sortItems(0, Qt.AscendingOrder)
-    self.buytable.setRowCount(len(part.bl)+1)
+    self.buytable.setRowCount(len(part.buy)+1)
     i = 0
-    for (when, wher, idx, price, amount) in part.bl:
+    for (when, wher, idx, price, amount) in part.buy:
       self.buytable.setItem(i, 0, QtGui.QTableWidgetItem(when))
       self.buytable.setItem(i, 1, QtGui.QTableWidgetItem(wher))
       self.buytable.setItem(i, 2, QtGui.QTableWidgetItem(idx))
@@ -174,10 +174,10 @@ class Part(QtGui.QWidget):
     #self.tagtable.setSortingEnabled(True)
     #self.tagtable.sortItems(0, Qt.AscendingOrder)
     self.tagtable.clear()
-    self.tagtable.setRowCount(len(part.tl)+1)
+    self.tagtable.setRowCount(len(part.tag)+1)
     self.tagtable.setHorizontalHeaderLabels(['tag','value'])
     i = 0
-    for (tag, value) in part.tl:
+    for (tag, value) in part.tag:
       self.tagtable.setItem(i, 0, QtGui.QTableWidgetItem(tag))
       self.tagtable.setItem(i, 1, QtGui.QTableWidgetItem(value))
       i += 1
@@ -249,7 +249,7 @@ class Part(QtGui.QWidget):
     p.single_value = self.single_value.isChecked()
     p.quantity = self.quantity.text()
     p.threshold = self.threshold.text()
-    p.vl[:] = [] # change list in place
+    p.value[:] = [] # change list in place
     for i in range(0, self.valtable.rowCount()):
        def getval(r, c):
          x = self.valtable.item(r, c)
@@ -260,8 +260,8 @@ class Part(QtGui.QWidget):
        qua = getval(i, 2)
        thr = getval(i, 3)
        if val != '' or qua != '' or thr != '':
-         p.vl.append((val, qua, thr))
-    p.bl[:] = []
+         p.value.append((val, qua, thr))
+    p.buy[:] = []
     for i in range(0, self.buytable.rowCount()):
        def getval(r, c):
          x = self.buytable.item(r, c)
@@ -274,8 +274,8 @@ class Part(QtGui.QWidget):
        price = getval(i, 3)
        amount = getval(i, 4)
        if wher != '':
-         p.bl.append((when, wher, idx, price, amount))
-    p.tl[:] = []
+         p.buy.append((when, wher, idx, price, amount))
+    p.tag[:] = []
     for i in range(0, self.tagtable.rowCount()):
       def getval(r, c):
         x = self.tagtable.item(r, c)
@@ -285,5 +285,5 @@ class Part(QtGui.QWidget):
       tag = getval(i, 0)
       value = getval(i, 1)
       if tag != '':
-        p.tl.append((tag, value))
+        p.tag.append((tag, value))
     return p.save()

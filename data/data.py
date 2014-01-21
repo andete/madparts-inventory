@@ -21,10 +21,10 @@ class Part(object):
   @staticmethod
   def make(cat, fn, name_package = None):
     part = Part(cat)
-    try:
-      part.p = data_json.Part(cat.dirname, fn)
-    except NotJsonError:
-      part.p = data_ini.Part(cat.dirname, fn)
+    #try:
+    #  part.p = data_json.Part(cat.dirname, fn)
+    #except NotJsonError:
+    part.p = data_ini.Part(cat.dirname, fn)
     if not name_package is None:
       part.p.save_new(name_package)
     part.__set_tags()
@@ -148,7 +148,7 @@ class Part(object):
     self.tags = []
     self.tags.append(self.full_name.lower())
     self.tags.append(self.location.lower())
-    for (k,v) in self.tl:
+    for (k,v) in self.tag:
       if k != "":
         self.tags.append(k.lower())
       if v != "":
